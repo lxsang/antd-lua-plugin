@@ -1,7 +1,4 @@
-LUA_H= -I../../3rd/lua-5.3.4/ 
-REAL_PLUGINS_BASE=../../$(PLUGINS_BASE)
-LIB_EXT=llib
-LIB_BUILD_DIR=$(PBUILDIRD)/lua-api
+include ../../var.mk
 main:$(LIB_OBJ) $(LIB_NAME)
 
 %.o: %.c
