@@ -5,5 +5,3 @@ Lua support for ANTD. When enabled, Lua can be used as server side script for AN
 * libreadline
 * sqlite3 (optional)
 * libshadow for the shared library Ulib
-### example
-* git for version control application
