@@ -1,7 +1,5 @@
 #include "lua-api.h"
 
-void init();
-call __init__ = init;
 static const struct luaL_Reg modules [] = {
 #ifdef USE_DB
        {"sqlite", luaopen_sqlite},
