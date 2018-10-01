@@ -273,7 +273,8 @@ static int l_base64_decode(lua_State *L)
 	lua_new_byte_array(L,len);
 	byte_array_t * arr = NULL;
 	arr = l_check_barray(L,2);
-	Base64decode(arr->data, s);
+	len = Base64decode(arr->data, s);
+	arr->size = len;
 	//lua_pushstring(L,dst);
 	//free(dst);
 	return 1;
