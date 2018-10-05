@@ -13,9 +13,6 @@ static const struct luaL_Reg modules [] = {
 
 void init()
 {
-	//signal(SIGPIPE, SIG_IGN);
-	//signal(SIGABRT, SIG_IGN);
-	// init the plugin here
 	LOG("%s \n","INIT LUA HANDLER");
 }
 /**
@@ -33,7 +30,7 @@ static void push_dict_to_lua(lua_State* L, dictionary d)
 		{
 			lua_pushstring(L,as->key);
 			//printf("KEY %s\n", as->key);
-			if(EQU(as->key,"cookie") || EQU(as->key,"__xheader__"))
+			if(EQU(as->key,"COOKIE") || EQU(as->key,"REQUEST_HEADER") || EQU(as->key,"REQUEST_DATA") )
 				push_dict_to_lua(L, (dictionary)as->value);
 			else
 			{
@@ -43,8 +40,10 @@ static void push_dict_to_lua(lua_State* L, dictionary d)
 			lua_settable(L, -3);
 		}
 }
-void handle(void* client, const char* method, const char* path, dictionary rq)
+void* handle(void* data)
 {
+	antd_request_t* rq = (antd_request_t*) data;
+	plugin_header_t* __plugin__ = meta();
 	lua_State* L = NULL;
 	//char * index = __s("%s/%s",__plugin__.htdocs,"router.lua");
 	char* cnf = config_dir();
@@ -58,11 +57,11 @@ void handle(void* client, const char* method, const char* path, dictionary rq)
 	// API header
 	lua_newtable(L);
 	lua_pushstring(L,"name");
-	lua_pushstring(L, __plugin__.name);
+	lua_pushstring(L, __plugin__->name);
 	lua_settable(L,-3);
 	
 	lua_pushstring(L,"root");
-	lua_pushstring(L, __plugin__.htdocs);
+	lua_pushstring(L, __plugin__->htdocs);
 	lua_settable(L,-3);
 	
 	lua_pushstring(L,"apiroot");
@@ -74,22 +73,13 @@ void handle(void* client, const char* method, const char* path, dictionary rq)
 	// Request
 	lua_newtable(L);
 	lua_pushstring(L,"id");
-	lua_pushlightuserdata(L, client);
+	lua_pushlightuserdata(L, rq->client);
 	//lua_pushnumber(L,client);
 	lua_settable(L, -3);
-	
-	lua_pushstring(L,"method");
-	lua_pushstring(L,method);
+	lua_pushstring(L,"request");
+	push_dict_to_lua(L,rq->request);
 	lua_settable(L, -3);
-	
-	lua_pushstring(L,"path");
-	lua_pushstring(L,path);
-	lua_settable(L, -3);
-	
-	lua_pushstring(L,"query");
-	push_dict_to_lua(L,rq);
-	lua_settable(L, -3);
-	lua_setglobal(L, "REQUEST");
+	lua_setglobal(L, "HTTP_REQUEST");
 	
 	// load major apis
 	if(is_file(apis))
@@ -111,9 +101,10 @@ void handle(void* client, const char* method, const char* path, dictionary rq)
 		free(cnf);
 	if(apis)
 		free(apis);
+	return antd_create_task(NULL, (void*)rq, NULL);
 	//lua_close(L);
 }
-void pexit()
+void destroy()
 {
-	LOG("%s \n","Exit LUA Handler");
+	LOG("%s \n","Exit LUA Handle");
 }

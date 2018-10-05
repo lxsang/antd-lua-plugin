@@ -2,13 +2,13 @@ std = modules.std()
 bytes = modules.bytes()
 array = modules.array()
 function std.html()
-	std._html(REQUEST.id)
+	std._html(HTTP_REQUEST.id)
 end
 function std.text()
-	std._text(REQUEST.id)
+	std._text(HTTP_REQUEST.id)
 end
 function std.status(code, msg)
-	std._status(REQUEST.id, code, msg)
+	std._status(HTTP_REQUEST.id, code, msg)
 end
 function std.custom_header(k,v)
 	--print(k..":"..v)
@@ -19,38 +19,38 @@ function std.header_flush()
 end
 --_redirect
 function std.redirect(s)
-	std._redirect(REQUEST.id,s)
+	std._redirect(HTTP_REQUEST.id,s)
 end
 function std.json()
-	std._json(REQUEST.id)
+	std._json(HTTP_REQUEST.id)
 end
 function std.jpeg()
-	std._jpeg(REQUEST.id)
+	std._jpeg(HTTP_REQUEST.id)
 end
 function std.header(s)
-	std._header(REQUEST.id,s)
+	std._header(HTTP_REQUEST.id,s)
 end
 function std.octstream(s)
-	std._octstream(REQUEST.id,s)
+	std._octstream(HTTP_REQUEST.id,s)
 end
 function std.textstream()
-	std._textstream(REQUEST.id)
+	std._textstream(HTTP_REQUEST.id)
 end
 function std.ti(v)
-	std._ti(REQUEST.id,v)
+	std._ti(HTTP_REQUEST.id,v)
 end
 function std.t(s)
-	std._t(REQUEST.id,s)
+	std._t(HTTP_REQUEST.id,s)
 end
 function std.f(v)
-	std._f(REQUEST.id,v)
+	std._f(HTTP_REQUEST.id,v)
 end
 function std.fb(v)
-	std._fb(REQUEST.id,v)
+	std._fb(HTTP_REQUEST.id,v)
 end
 function std.setCookie(t,v,p)
 	p = p or ""
-	std._setCookie(REQUEST.id,t,v,p)
+	std._setCookie(HTTP_REQUEST.id,t,v,p)
 end
 function std.cjson(v, p)
 	
@@ -65,7 +65,7 @@ end
 --_upload
 --_route
 function std.unknow(s)
-	std._unknow(REQUEST.id,s)
+	std._unknow(HTTP_REQUEST.id,s)
 end
 
 function std.readOnly(t) -- bugging
@@ -84,7 +84,7 @@ function std.readOnly(t) -- bugging
 -- web socket
 std.ws = {}
 function std.ws.header()
-	local h = std.ws_header(REQUEST.id)
+	local h = std.ws_header(HTTP_REQUEST.id)
 	if(h) then
 		return h --std.readOnly(h)
 	else
@@ -93,22 +93,22 @@ function std.ws.header()
 end
 
 function std.ws.read(h)
-	return std.ws_read(REQUEST.id,h)
+	return std.ws_read(HTTP_REQUEST.id,h)
 end
 function std.ws.swrite(s)
-	std.ws_t(REQUEST.id,s)
+	std.ws_t(HTTP_REQUEST.id,s)
 end
 function std.ws.fwrite(s)
-	std.ws_f(REQUEST.id,s)
+	std.ws_f(HTTP_REQUEST.id,s)
 end
 function std.ws.write_bytes(arr)
-	std.ws_b(REQUEST.id,arr)
+	std.ws_b(HTTP_REQUEST.id,arr)
 end
 function std.ws.enable()
-	return REQUEST.query ~= nil and REQUEST.query["__web_socket__"] == "1"
+	return HTTP_REQUEST.query ~= nil and HTTP_REQUEST.query["__web_socket__"] == "1"
 end
 function std.ws.close(code)
-	std.ws_close(REQUEST.id,code)
+	std.ws_close(HTTP_REQUEST.id,code)
 end
 function std.basename(str)
 	local name = string.gsub(std.trim(str,"/"), "(.*/)(.*)", "%2")

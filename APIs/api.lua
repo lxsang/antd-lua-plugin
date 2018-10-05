@@ -3,21 +3,23 @@ __ROOT__ = __api__.root
 -- set require path
 package.path = __ROOT__ .. '/?.lua;'..__api__.apiroot..'/?.lua'
 package.cpath = __api__.apiroot..'/?.llib'
+require("std")
+require("utils")
+require("extra_mime")
 -- set session
 SESSION = {}
-if REQUEST.query ~= nil and REQUEST.query.cookie ~= nil then
-	SESSION = REQUEST.query.cookie
+
+REQUEST = HTTP_REQUEST.request.REQUEST_DATA
+REQUEST.method = HTTP_REQUEST.request.METHOD
+if HTTP_REQUEST.request.COOKIE then
+	SESSION = HTTP_REQUEST.request.COOKIE
 end
-HEADER = REQUEST.query.__xheader__
+HEADER = HTTP_REQUEST.request.REQUEST_HEADER
 HEADER.mobile = false
 
 if HEADER["User-Agent"] and HEADER["User-Agent"]:match("Mobi") then
     HEADER.mobile = true
 end
-
-require("std")
-require("utils")
-require("extra_mime")
 
 function has_module(m)
 	if utils.file_exists(__ROOT__..'/'..m) then
@@ -128,7 +130,7 @@ end
 -- run the file
 
 
-local m, s, p  = has_module(REQUEST.path)
+local m, s, p  = has_module(HTTP_REQUEST.request.RESOURCE_PATH)
 if m then
     -- run the correct module
     if s then
@@ -138,7 +140,7 @@ if m then
         require(p)
     end
 else
-	unknow("Resource not found for request "..REQUEST.path)
+	unknow("Resource not found for request "..HTTP_REQUEST.request.RESOURCE_PATH)
 end
 
 
