@@ -10,6 +10,8 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/types.h>
+#include <signal.h>
 #include <errno.h>
 #include <pwd.h>
 #include <grp.h>
@@ -118,6 +120,15 @@ static int l_waitpid(lua_State* L)
 	int status;
     waitpid(pid, &status, 0);
 	lua_pushnumber(L, status);
+	return 1;
+}
+static int l_kill(lua_State* L)
+{
+	int pid = luaL_checknumber(L,1);
+	if(pid == -1) pid = getpid();
+	int status = kill(pid, SIGKILL);
+	lua_pushnumber(L, status);
+	return 1;
 }
 static int l_setuid(lua_State* L)
 {
@@ -610,6 +621,7 @@ static const struct luaL_Reg _lib [] = {
 	{"setuid", l_setuid},
 	{"setgid", l_setgid},
 	{"fork", l_fork},
+	{"kill", l_kill},
 	{"waitpid", l_waitpid},
 	{"chown",l_chown},
 	{"delete", l_delete},

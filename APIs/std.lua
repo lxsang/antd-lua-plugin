@@ -105,7 +105,7 @@ function std.ws.write_bytes(arr)
 	std.ws_b(HTTP_REQUEST.id,arr)
 end
 function std.ws.enable()
-	return HTTP_REQUEST.query ~= nil and HTTP_REQUEST.query["__web_socket__"] == "1"
+	return HTTP_REQUEST ~= nil and HTTP_REQUEST.request["__web_socket__"] == "1"
 end
 function std.ws.close(code)
 	std.ws_close(HTTP_REQUEST.id,code)
