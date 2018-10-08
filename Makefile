@@ -33,6 +33,7 @@ deepclean: luaclean clean
 
 clean: libclean
 		-rm -f *.o 3rd/jsmn/*.o   *.$(EXT) $(PBUILDIRD)/$(PLUGINS) 
+		- rm ./libantd.$(EXT)
 		-rm $(PLUGINS_BASE)/plugin.o
 		-rm $(PBUILDIRD)/$(PL_NAME)/*.$(LIB_EXT)
 
