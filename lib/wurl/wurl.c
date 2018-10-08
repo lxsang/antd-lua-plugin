@@ -61,7 +61,7 @@ send a request
 */
 int wurl_request_socket(const char* ip, int port)
 {
-	int sockfd, bytes_read;
+	int sockfd;
 	struct sockaddr_in dest;
 	
 	// time out setting
@@ -82,7 +82,7 @@ int wurl_request_socket(const char* ip, int port)
     bzero(&dest, sizeof(dest));
     dest.sin_family = AF_INET;
     dest.sin_port = htons(port);
-    if ( inet_aton(ip, &dest.sin_addr.s_addr) == 0 )
+    if ( inet_aton(ip, &dest.sin_addr) == 0 )
     {
 		perror(ip);
 		close(sockfd);
@@ -344,14 +344,14 @@ int wurl_read_data(int sock,char** din)
 	char* tmp = NULL;
 	int CHUNK = 512;
 	char buff[MAX_BUFF];
-	char * data = (unsigned char*) malloc(CHUNK);
+	char * data = ( char*) malloc(CHUNK);
 	int cursize = CHUNK;
 	int size = wurl_read_buf(sock,buff,MAX_BUFF);
 	while(size > 0)
 	{
 		if(total_length+size > cursize)
 		{
-			tmp = (unsigned char*) realloc(data,total_length + size+ CHUNK );
+			tmp = (char*) realloc(data,total_length + size+ CHUNK );
 			
 			if(!tmp) 
 			{
@@ -380,7 +380,6 @@ int wurl_read_data(int sock,char** din)
 int wurl_request(const char* hostname, int port, wurl_header_t* header, int lazy)
 {
 	char ip[100];
-	char buff[MAX_BUFF];
 	wurl_ip_from_hostname(hostname ,ip);
 	int sock = wurl_request_socket(ip, port);
 	
@@ -400,8 +399,7 @@ int wurl_request(const char* hostname, int port, wurl_header_t* header, int lazy
 	if(lazy)
 	{
 		// read line by line, ignore content length
-		char * d;
-		header->clen = wurl_read_data(sock,&header->data);
+		header->clen = wurl_read_data(sock,(char**)&header->data);
 		return 0;
 	} 	
 	return sock;
@@ -411,7 +409,7 @@ int wurl_download(const char* hostname, int port, wurl_header_t* h, const char* 
 {
 	// we will handler the data reading
 	int sock = wurl_request(hostname, port,h,0);
-	unsigned char buff[MAX_BUFF];
+	char buff[MAX_BUFF];
 	if(sock < 0) return -1;
 	
 	FILE* fp =  fopen(to,"wb");
@@ -471,7 +469,7 @@ static int l_get(lua_State *L)
 	const char* resource = luaL_checkstring(L,3);
 	
 	wurl_header_t rq;
-	rq.resource = resource;
+	rq.resource = (char*)resource;
 	rq.type = GET;
 	
 	if(wurl_request(host,port,&rq,1) == 0)
@@ -492,11 +490,11 @@ static int l_get(lua_State *L)
 		{
 			//printf("Data is binary, encode as base64 %s\n", rq.ctype);
 			char* dst = (char*) malloc(3*rq.clen/2);
-			Base64encode(dst, rq.data,rq.clen);
+			Base64encode(dst, (const char*)rq.data,rq.clen);
 			lua_pushstring(L,dst);
 			free(dst);
 		} else
-			lua_pushstring(L,rq.data);
+			lua_pushstring(L,(const char*)rq.data);
 		free(rq.data); // be careful
 		lua_settable(L,-3);
 		return 1;
@@ -515,11 +513,11 @@ static int l_post(lua_State *L)
 	const char* ctype = luaL_checkstring(L,4); // content type
 	const char* data = luaL_checkstring(L,5); // post data
 	wurl_header_t rq;
-	rq.resource = res;
+	rq.resource = (char*)res;
 	rq.type = POST;
-	rq.ctype = ctype;
+	rq.ctype = (char*)ctype;
 	rq.clen = strlen(data);
-	rq.data = data;
+	rq.data = (unsigned char*)data;
 	
 	if(wurl_request(host,port,&rq,1) == 0)
 	{
@@ -540,11 +538,11 @@ static int l_post(lua_State *L)
 		{
 			//printf("Data is binary, encode as base64 %s\n", rq.ctype);
 			char* dst = (char*) malloc(3*rq.clen/2);
-			Base64encode(dst, rq.data,rq.clen);
+			Base64encode(dst, (const char*)rq.data,rq.clen);
 			lua_pushstring(L,dst);
 			free(dst);
 		} else
-			lua_pushstring(L,rq.data);
+			lua_pushstring(L,(const char*)rq.data);
 		free(rq.data); // be careful
 		lua_settable(L,-3);
 		return 1;
@@ -564,7 +562,7 @@ static int l_download(lua_State* L)
 	const char* res = luaL_checkstring(L,3); // resource
 	const char* file = luaL_checkstring(L,4); // file 
 	wurl_header_t rq;
-	rq.resource = res;
+	rq.resource = (char*)res;
 	rq.type = GET;
 	if(wurl_download(host,port,&rq,file) == 0)
 		lua_pushboolean(L, true);
@@ -590,21 +588,21 @@ static int l_upload(lua_State* L)
 	if(sock <= 0) goto fail;
 	
 	char * names[2];
-	names[0] = name;
+	names[0] = (char*)name;
 	char* files[2];
 	//files[0] = "/Users/mrsang/tmp/Archive.zip";
-	files[0] = file;
+	files[0] = (char*)file;
 	
 	//printf("SENDIND DILE\n");
-	wurl_send_files(sock, resource,1,names,files);
+	wurl_send_files(sock, (char*)resource,1,names,files);
 	wurl_header_t header;
 	//printf("READ HEADER\n");
 	wurl_response_header(sock, &header);
 	//printf("read data\n");
-	wurl_read_data(sock,&header.data);
+	wurl_read_data(sock,(char**)&header.data);
 	if(header.ctype != NULL && header.data)
 	{
-		lua_pushstring(L,header.data);
+		lua_pushstring(L,(const char*)header.data);
 		free(header.data);
 		return 1;
 	}

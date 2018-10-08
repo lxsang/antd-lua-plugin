@@ -76,35 +76,36 @@ static int process_token_array(lua_State* L, jsmntok_t* t, const char* s, int ci
 	return id;
 }
 
+/*
 static void stackDump (lua_State *L) {
       int i;
       int top = lua_gettop(L);
-      for (i = 1; i <= top; i++) {  /* repeat for each level */
+      for (i = 1; i <= top; i++) {  
         int t = lua_type(L, i);
         switch (t) {
     
-          case LUA_TSTRING:  /* strings */
+          case LUA_TSTRING:  
             printf("`%s' \n", lua_tostring(L, i));
             break;
     
-          case LUA_TBOOLEAN:  /* booleans */
+          case LUA_TBOOLEAN: 
             printf(lua_toboolean(L, i) ? "true\n" : "false\n");
             break;
     
-          case LUA_TNUMBER:  /* numbers */
+          case LUA_TNUMBER:  
             printf("%g\n", lua_tonumber(L, i));
             break;
     
-          default:  /* other values */
+          default:  
             printf("%s\n", lua_typename(L, t));
             break;
     
         }
-        printf("  ");  /* put a separator */
+        printf("  ");  
       }
-      printf("\n");  /* end the listing */
+      printf("\n");  
     }
-	
+*/
 static int process_token_string(lua_State* L, jsmntok_t* t, const char* s, int cid)
 {
 	// unescape a string
@@ -118,7 +119,7 @@ static int process_token_string(lua_State* L, jsmntok_t* t, const char* s, int c
 	if (lua_pcall(L, 1, 1, 0) != 0)
 	        printf("Error running function `unescape': %s\n",lua_tostring(L, -1));
 	if(str) free(str);
-	str = luaL_checkstring(L,-1);
+	str = (char*)luaL_checkstring(L,-1);
 	lua_settop(L, -3);
 	lua_pushstring(L,str);
 	//stackDump(L);

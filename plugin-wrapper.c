@@ -49,7 +49,7 @@ static int l_jpeg (lua_State *L) {
 static int l_octstream (lua_State *L) {
 	void* client = lua_touserdata (L, 1);
 	const char* s = luaL_checkstring(L,2);
-	octstream(client,s);
+	octstream(client,(char*)s);
 	return 0;  /* number of results */
 }
 
@@ -224,7 +224,7 @@ static int l_md5(lua_State* L)
 	const char* s = luaL_checkstring(L,1);
 	int len = strlen(s);
 	char buff[256];
-	md5(s,len,buff);
+	md5((uint8_t*)s,len,buff);
 	lua_pushstring(L,buff);
 	return 1;	
 }
@@ -238,20 +238,20 @@ static int l_sha1(lua_State *L )
 }
 static int l_base64_encode(lua_State *L)
 {
-	const char* s;
+	char* s;
 	int len;
 	char* dst;
 	byte_array_t *arr = NULL;
 	if(lua_isstring(L,1))
 	{
-		s= luaL_checkstring(L,1);
+		s= (char*)luaL_checkstring(L,1);
 		len = strlen(s);
 	}
 	else
 	{
 		// this may be an bytearray
 		arr = l_check_barray(L,1);
-		s = arr->data;
+		s = (char*)arr->data;
 		len = arr->size;
 	}
 	if(len == 0)
@@ -273,7 +273,7 @@ static int l_base64_decode(lua_State *L)
 	lua_new_byte_array(L,len);
 	byte_array_t * arr = NULL;
 	arr = l_check_barray(L,2);
-	len = Base64decode(arr->data, s);
+	len = Base64decode((char*)arr->data, s);
 	arr->size = len;
 	//lua_pushstring(L,dst);
 	//free(dst);
@@ -425,7 +425,7 @@ static int l_ws_read_header(lua_State *L)
 static int l_ws_t(lua_State*L)
 {
 	void* client = lua_touserdata (L, 1);
-	char* str = luaL_checkstring(L,2);
+	char* str = (char*)luaL_checkstring(L,2);
 	ws_t(client,str);
 	return 1;
 }
@@ -443,7 +443,7 @@ static int l_status(lua_State*L)
  static int l_ws_f(lua_State*L)
  {
 	void* client = lua_touserdata (L, 1);
-	char* str = luaL_checkstring(L,2);
+	char* str = (char*)luaL_checkstring(L,2);
 	ws_f(client,str);
 	return 1;
  }
@@ -465,7 +465,7 @@ static int l_status(lua_State*L)
 
  static int l_trim(lua_State* L)
  {
-	 const char* str = strdup((char*)luaL_checkstring(L,1));
+	char* str = strdup((char*)luaL_checkstring(L,1));
 	 const char* tok = luaL_checkstring(L,2);
 	 
 	 trim(str,tok[0]);

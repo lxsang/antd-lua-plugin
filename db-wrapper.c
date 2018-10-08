@@ -7,7 +7,7 @@ static int l_getdb (lua_State *L) {
 //	if(db)
 //		dbclose(db);
 	//printf("OPEN: %s\n",s);
-	sqldb db = __getdb(s);
+	sqldb db = __getdb((char*)s);
 	if(db)
 		lua_pushlightuserdata(L, db);
 	else
