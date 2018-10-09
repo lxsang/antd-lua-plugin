@@ -10,7 +10,7 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/types.h>
+#include <sys/wait.h>
 #include <signal.h>
 #include <errno.h>
 #include <pwd.h>
@@ -198,7 +198,7 @@ static int l_getuid(lua_State* L)
                LOG("malloc eror \n");
                return 1;
            }
-		if (getgrouplist(name, gid, (int*)groups, &ngroups) == -1) {
+		if (getgrouplist(name, gid, groups, &ngroups) == -1) {
 			free(groups);
 			LOG("getgrouplist() returned -1; ngroups = %d\n", ngroups);
 			return 1;
