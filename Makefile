@@ -20,7 +20,7 @@ PLUGINLIBS = -lm -lpthread -lsqlite3 libantd.$(EXT)
 PCFLAGS=-W -Wall -g -std=c99 -D DEBUG  $(PPF_FLAG) -D USE_DB
 main: lua $(PLUGINSDEP)  $(PLUGINS) api lib
 lua:
-	cd 3rd/lua-5.3.4 && make $(FL_LUA)
+	cd 3rd/lua-5.3.4 && CC=$(CC) make $(FL_LUA)
 %.o: %.c
 		$(CC) $(PCFLAGS) -fPIC $(INCFLAG) -c  $< -o $@
 
