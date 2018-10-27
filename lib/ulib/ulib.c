@@ -38,23 +38,23 @@ static int l_check_login (lua_State *L) {
 		return 1;
     }
     spwd = getspnam(username);
-    if (spwd == NULL)
+    /*if (spwd == NULL)
 	{
 		lua_pushboolean(L,0);
         printf("no permission to read shadow password file\n");
 		return 1;
-	}
+	}*/
 
     if (spwd != NULL)           /* If there is a shadow password record */
 	{
         pwd->pw_passwd = spwd->sp_pwdp;     /* Use the shadow password */
 	}
-	else
+	/*else
 	{
     	lua_pushboolean(L,0);
 		printf("shadow record is null \n" );
 		return 1;
-	}
+	}*/
     /* Encrypt password and erase cleartext version immediately */
     encrypted = crypt(password, pwd->pw_passwd);
     if (encrypted == NULL)
