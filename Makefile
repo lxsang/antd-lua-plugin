@@ -3,7 +3,7 @@ include var.mk
 
 PL_NAME=lua-api
 PLUGINS=$(PL_NAME).$(EXT)
-LLIBS=wurl.llib ulib.llib  ann.llib stmr.llib #pibot.llib
+LLIBS=wurl.llib ulib.llib  ann.llib stmr.llib ffi.llib #pibot.llib
  
 OBJS = 		$(PLUGINS_BASE)/plugin.o 
 
