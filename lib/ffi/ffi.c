@@ -21,6 +21,12 @@
 #include <ffi.h>
 
 #define MAX_FN_ARGC 32
+
+typedef struct {
+	uint8_t allocated;
+	uint8_t is_pointer;
+	void* data;
+} arg_pointer_t;
 // define atomic type
 typedef enum ffi_atomic_t {
 	L_FFI_TYPE_VOID,
@@ -88,15 +94,12 @@ static int l_dlopen(lua_State* L)
 
 static int l_dlclose(lua_State* L)
 {
-	LOG("%s\n","Begin close");
 	void* handle = lua_touserdata(L,1);
 	if(!handle)
 	{
-		LOG("%s\n","Cannot close that thing, handle not found");
 		lua_pushboolean(L,0);
 		return 1;
 	}
-	LOG("%s\n","the handle is found");
 	dlclose(handle);
 	lua_pushboolean(L,1);
 	return 1;
@@ -143,42 +146,84 @@ static int l_ffi_prepare(lua_State* L, ffi_type** argvtype, int idx)
 	return argc;
 }
 
-void * parser_value(lua_State* L, int idx, ffi_type* ffitype)
+void parser_value(lua_State* L, int idx, ffi_type* ffitype, arg_pointer_t * ptr)
 {
-	lua_Number * value;
+	ptr->allocated = 1;
+	ptr->is_pointer = 0;
 	switch(ffitype->type)
 	{
-		case FFI_TYPE_VOID : return NULL;
 		case FFI_TYPE_POINTER:
-			// TODO: need to fix this to universal pointer
-			return lua_tostring(L, idx);
+			ptr->allocated = 0;
+			ptr->is_pointer = 1;
+			ptr->data = (void*)lua_tostring(L, idx);
+			return;
 
 		case FFI_TYPE_UINT8:
+			ptr->data = (void*) malloc(ffitype->size);
+			*((uint8_t*)ptr->data) = (uint8_t)lua_tonumber(L,idx);
+			return;
+
 		case FFI_TYPE_SINT8:
+			ptr->data = (void*) malloc(ffitype->size);
+			*((int8_t*)ptr->data) = (int8_t)lua_tonumber(L,idx);
+			return;
+
 		case FFI_TYPE_UINT16:
+			ptr->data = (void*) malloc(ffitype->size);
+			*((uint16_t*)ptr->data) = (uint16_t)lua_tonumber(L,idx);
+			return;
+
 		case FFI_TYPE_SINT16:
+			ptr->data = (void*) malloc(ffitype->size);
+			*((int16_t*)ptr->data) = (int16_t)lua_tonumber(L,idx);
+			return;
+
 		case FFI_TYPE_UINT32:
+			ptr->data = (void*) malloc(ffitype->size);
+			*((uint32_t*)ptr->data) = (uint32_t)lua_tonumber(L,idx);
+			return;
+
 		case FFI_TYPE_SINT32:
+			ptr->data = (void*) malloc(ffitype->size);
+			*((int32_t*)ptr->data) = (int32_t)lua_tonumber(L,idx);
+			return;
+
 		case FFI_TYPE_UINT64:
+			ptr->data = (void*) malloc(ffitype->size);
+			*((uint64_t*)ptr->data) = (uint64_t)lua_tonumber(L,idx);
+			return;
+
 		case FFI_TYPE_SINT64:
+			ptr->data = (void*) malloc(ffitype->size);
+			*((int64_t*)ptr->data) = (int64_t)lua_tonumber(L,idx);
+			return; 
+
 		case FFI_TYPE_LONGDOUBLE:
+			/*This is bug in lua*/
+			ptr->data = (void*) malloc(ffitype->size);
+			*((long double*)ptr->data) = (long double)lua_tonumber(L,idx);
+			return;
+
 		case FFI_TYPE_FLOAT:
 		case FFI_TYPE_DOUBLE:
-			value = (lua_Number*) malloc(ffitype->size);
-			*value = lua_tonumber(L,idx);
-			break;
+			ptr->data = (void*) malloc(ffitype->size);
+			*((float*)ptr->data) = (float)lua_tonumber(L,idx);
+			return;
 
 		
-		case FFI_TYPE_STRUCT:
+		/*case FFI_TYPE_STRUCT:
 			// not implemented yet
 			return NULL;
+			break;*/
+		default: 
+			ptr->allocated = 0;
+			ptr->is_pointer = 0;
+			ptr->data = NULL;
 			break;
-		default: return NULL;
 	}
-	return (void*)value;
 }
 
-static void parser_arguments(lua_State* L, int idx, void** argv, ffi_type** argvtype)
+static void parser_arguments(lua_State* L, int idx, arg_pointer_t* argv, ffi_type** argvtype)
 {
 	// loop through table
 	lua_pushvalue(L,idx);
@@ -189,7 +234,7 @@ static void parser_arguments(lua_State* L, int idx, void** argv, ffi_type** argv
 	while(lua_next(L, -2))
 	{
 		// stack now contains: -1 => value; -2 key; -3 table
-		argv[i] = parser_value(L, -1, argvtype[i]);
+		parser_value(L, -1, argvtype[i],&argv[i]);
 		i++;
 		// pop the value, leaving the original key
 		lua_pop(L,1);
@@ -200,29 +245,12 @@ static void parser_arguments(lua_State* L, int idx, void** argv, ffi_type** argv
 	lua_pop(L,1);
 }
 
-static void free_arguments(void** argv, ffi_type** argvtype)
+static void free_arguments(arg_pointer_t* argv, int argc)
 {
-	ffi_type * ffitype;
-	for(int i = 0; argvtype[i] != NULL; i++)
+	for(int i = 0; i< argc; i++)
 	{
-		ffitype = argvtype[i];
-		switch (ffitype->type)
-		{
-			case FFI_TYPE_UINT8:
-			case FFI_TYPE_SINT8:
-			case FFI_TYPE_UINT16:
-			case FFI_TYPE_SINT16:
-			case FFI_TYPE_UINT32:
-			case FFI_TYPE_SINT32:
-			case FFI_TYPE_UINT64:
-			case FFI_TYPE_SINT64:
-			case FFI_TYPE_LONGDOUBLE:
-			case FFI_TYPE_FLOAT:
-			case FFI_TYPE_DOUBLE:
-				if(argv[i]) free(argv[i]);
-				break;
-			default: break;
-		}
+		if(argv[i].allocated)
+			free(argv[i].data);
 	}
 	
 }
@@ -230,36 +258,45 @@ static void free_arguments(void** argv, ffi_type** argvtype)
 static int l_ffi_call(lua_State* L)
 {
 	ffi_type * argvtype[MAX_FN_ARGC];
+	void* argv[MAX_FN_ARGC];
 	ffi_type * rettype = lua_touserdata(L,1);
 	int argc = l_ffi_prepare(L, argvtype, 2);
-	printf("Argument count %d\n", argc);
-	printf("ret type: %d\n", rettype->type);
-	void* argv[MAX_FN_ARGC];
+	arg_pointer_t* args;
 	ffi_arg ret;
 	ffi_cif cif;
 	if(ffi_prep_cif(&cif,FFI_DEFAULT_ABI,argc,rettype,argvtype) == FFI_OK)
 	{
-		void(* fn)(const char*) = lua_touserdata(L,3);
+		void * fn = lua_touserdata(L,3);
 		if(!fn)
 		{
 			LOG("%s\n", "function not found");
 			lua_pushboolean(L,0);
 			return 1;
 		}
+		if(lua_rawlen(L,4) != argc)
+		{
+			LOG("%s\n", "Argument count does not not match");
+			lua_pushboolean(L,0);
+			return 1;
+		}
 		// the arguments of the function is at 4th position on the stack
 		// we need to loop through this table and check if argument type
 		// is correct to the definition in argvtype
-		//argv = (void**)malloc(sizeof(void*)*argc);
+		args = (arg_pointer_t*)malloc(sizeof(arg_pointer_t)*(argc+1));
 		//ret = (void*)malloc(rettype->size);
 		// now parser the argument
-		parser_arguments(L,4,argv,argvtype);
-		// test
-		char* tmp = (char*)argv[0];
-		argv[0] = &tmp;
+		parser_arguments(L,4,args,argvtype);
+		
+		for(int i = 0; i< argc; i++)
+		{
+			if(args[i].is_pointer && args[i].data)
+				argv[i] = &(args[i].data);
+			else
+				argv[i] = args[i].data;
+		}
 		ffi_call(&cif,fn, &ret, argv);
-		free_arguments(argv, argvtype);
-		//if(argv) free(argv);
-		//if(ret) free(ret);
+		free_arguments(args, argc);
+		if(args) free(args);
 		lua_pushboolean(L,1);
 		return 1;
 	}
@@ -321,7 +358,7 @@ static const struct luaL_Reg _lib [] = {
 	{"dlsym",l_dlsym},
 	{"dlclose",l_dlclose},
 	{"call",l_ffi_call},
-	{"atomic_type", l_ffi_atomic_type},
+	{"atomic", l_ffi_atomic_type},
 	{"struct", l_ffi_struct },
 	{NULL,NULL}
 };

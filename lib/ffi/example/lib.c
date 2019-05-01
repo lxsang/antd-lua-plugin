@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-void greet(const char* msg)
+void greet(const char* msg, float num, int sint, char c)
 {
-    printf("%s\n", msg);
+    printf("%s: '%f' '%d' '%c'\n", msg, num, sint, c);
 }

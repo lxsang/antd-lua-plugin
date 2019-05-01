@@ -1,45 +1,44 @@
-local ffi = require("ffi")
-local path = "/home/mrsang/Desktop/testffi/libtest.so"
+require("cif")
+local path = "/Users/mrsang/Google Drive/ushare/cwp/ant-http/plugins/antd-lua-plugin/lib/ffi/example/libtest.so"
 local lib = nil
 local fn = nil
 local rettype = nil
 local argtype = nil
-if ffi then
-    -- now ffi exist
-    -- try to load the test library
-    lib = ffi.dlopen(path)
-    if lib then
-        -- now try to lookup for the greet function
-        echo("looking for greet")
-        fn = ffi.dlsym(lib,"greet")
-        if fn then
-            -- now the function found
-            -- tried to called it
-            rettype = ffi.atomic_type(0) -- void
-            if rettype then
-                argtype = ffi.atomic_type(20) -- pointer
-                if(argtype) then
-                    -- call the function
-                    local r = ffi.call(rettype, {argtype}, fn, {"hello world"})
-                    if r then
-                        echo("BIG SUCCESS")
-                    else
-                        echo("HELL FAIL")
-                    end
+lib = FFI.load(path)
+if lib then
+    -- now try to lookup for the greet function
+    echo("looking for greet")
+    fn = FFI.lookup(lib,"greet")
+    if fn then
+        -- now the function found
+        -- tried to called it
+        rettype = FFI.atomic(FFI.type.VOID) -- void
+        if rettype then
+            argtype = {
+                FFI.atomic(FFI.type.POINTER),
+                FFI.atomic(FFI.type.DOUBLE),
+                FFI.atomic(FFI.type.SINT64),
+                FFI.atomic(FFI.type.SINT8)
+            } -- pointer
+            if(argtype) then
+                -- call the function
+                local r = FFI.call(rettype, argtype, fn, {"hello world", 0.987, -76, 65})
+                if r then
+                    echo("BIG SUCCESS")
                 else
-                    echo("argtype not found")
+                    echo("HELL FAIL")
                 end
             else
-                echo("return type not found")
+                echo("argtype not found")
             end
         else
-            echo("unable to find greet")
+            echo("return type not found")
         end
-       ffi.dlclose(lib)
     else
-        echo("unable to load the lib")
+        echo("unable to find greet")
     end
+   FFI.unloadAll()
 else
-    echo("cannot find ffi")
+    echo("unable to load the lib")
 end
 echo("end the day")
