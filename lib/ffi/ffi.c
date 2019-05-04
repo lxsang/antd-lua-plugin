@@ -188,10 +188,10 @@ void parser_value(lua_State* L, int idx, ffi_type* ffitype, void * data)
 			*((int64_t*)data) = (int64_t)lua_tonumber(L,idx);
 			return; 
 
-		case FFI_TYPE_LONGDOUBLE:
-			/*This is bug in lua*/
+		/*case FFI_TYPE_LONGDOUBLE:
+			//This is bug in lua
 			*((long double*)data) = (long double)lua_tonumber(L,idx);
-			return;
+			return;*/
 
 		case FFI_TYPE_FLOAT:
 		case FFI_TYPE_DOUBLE:
@@ -301,7 +301,7 @@ static void ffi_post_call(lua_State* L, void* ret, ffi_type* rettype)
 		case FFI_TYPE_SINT64:
 			lua_pushnumber(L, (lua_Number)(*((int64_t*)ret)));
 			break;
-		case FFI_TYPE_LONGDOUBLE:
+		//case FFI_TYPE_LONGDOUBLE:
 		case FFI_TYPE_FLOAT:
 		case FFI_TYPE_DOUBLE:
 			lua_pushnumber(L, *((double*)ret));
