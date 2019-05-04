@@ -493,9 +493,9 @@ static int l_ffi_meta(lua_State* L)
 			case FFI_TYPE_SINT64:
 				lua_pushstring(L, "SINT64");
 				break;
-			case FFI_TYPE_LONGDOUBLE:
+			/*case FFI_TYPE_LONGDOUBLE:
 				lua_pushstring(L, "LONGDOUBLE");
-				break;
+				break;*/
 			case FFI_TYPE_FLOAT:
 				lua_pushstring(L, "FLOAT");
 				break;
