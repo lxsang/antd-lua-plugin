@@ -117,9 +117,18 @@ static int l_fork(lua_State* L)
 static int l_waitpid(lua_State* L)
 {
 	int pid = luaL_checknumber(L,1);
+	int nohang = luaL_checknumber(L,2);
+	pid_t st;
 	int status;
-    waitpid(pid, &status, 0);
-	lua_pushnumber(L, status);
+	if(nohang)
+	{
+    	st = waitpid(pid, &status, WNOHANG);
+	}
+	else
+	{
+		st = waitpid(pid, &status, 0);
+	}
+	lua_pushnumber(L, st);
 	return 1;
 }
 static int l_kill(lua_State* L)
