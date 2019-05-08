@@ -596,6 +596,29 @@ static int l_ffi_bytearray(lua_State* L)
 	memcpy(ba->data, ptr, size);
 	return 1;
 }
+struct i2c_smbus_ioctl_data
+{
+  char read_write ;
+  uint8_t command ;
+  int size ;
+  void *data ;
+} ;
+
+static int l_ffi_ioctl(lua_State* L)
+{
+	int fd = luaL_checknumber(L,1);
+	char rw = luaL_checknumber(L,2);
+	uint8_t command =luaL_checknumber(L,3);
+	int size = luaL_checknumber(L,4);
+	void* data = lua_touserdata(L,5);
+	struct i2c_smbus_ioctl_data args ;
+	args.read_write = rw ;
+	args.command    = command ;
+	args.size       = size ;
+	args.data       = data ;
+	lua_pushnumber(L, ioctl (fd, 0x0720, &args));
+	return 1;
+}
 static const struct luaL_Reg _lib [] = {
 	{"dlopen", l_dlopen},
 	{"dlsym",l_dlsym},
@@ -614,6 +637,7 @@ static const struct luaL_Reg _lib [] = {
 	// pointer to byte array
 	{"bytearray", l_ffi_bytearray},
 	{"free", l_ffi_free},
+	{"I2CIoctl", l_ffi_ioctl},
 	{NULL,NULL}
 };
 

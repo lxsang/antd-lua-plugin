@@ -1,5 +1,5 @@
 #include <stdio.h>
-
+#include <stdlib.h>
 char data[] = {'h', 'e','l', 'l', 'o'};
 
 typedef struct{
@@ -16,6 +16,13 @@ typedef struct{
     char d;
 } test_t;
 
+struct i2c_smbus_ioctl_data
+{
+  char read_write ;
+  uint8_t command ;
+  int size ;
+  void *data ;
+} ;
 char greet(const char* msg, float num, int sint, char c)
 {
     printf("%s: '%f' '%d' '%c'\n", msg, num, sint, c);
@@ -34,7 +41,9 @@ void test_string(char* buff, const char* a)
     printf("%s\n", buff);
 }
 
-char * buff()
+int test_struct_ptr(struct i2c_smbus_ioctl_data* data)
 {
-    return data;
+    printf("Hello\n");
+    printf("rw %d cmd %d size %d %s\n", data->read_write, data->command, data->size, (char*)data->data);
+    return 1;
 }
