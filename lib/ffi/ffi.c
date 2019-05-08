@@ -555,6 +555,20 @@ static int l_ffi_byte_at_put(lua_State* L)
 	lua_pushboolean(L,0);
 	return 1;
 }
+static int l_ffi_byte_at_put_ptr(lua_State* L)
+{
+	void* ptr = lua_touserdata(L, 1);
+	int off = luaL_checkinteger(L,2);
+	void* v = lua_touserdata(L,3);
+	if(ptr)
+	{
+		*((void**)(ptr + off)) = v;
+		lua_pushboolean(L,1);
+		return 1;
+	}
+	lua_pushboolean(L,0);
+	return 1;
+}
 static int l_ffi_string(lua_State* L)
 {
 	void* ptr = lua_touserdata(L,1);
@@ -594,6 +608,7 @@ static const struct luaL_Reg _lib [] = {
 	{"at", l_ffi_offset},
 	{"byteAt", l_ffi_byte_at},
 	{"byteAtPut", l_ffi_byte_at_put},
+	{"atPutPtr", l_ffi_byte_at_put_ptr},
 	// special case: pointer to string
 	{"string", l_ffi_string},
 	// pointer to byte array
