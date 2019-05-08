@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+char data[] = {'h', 'e','l', 'l', 'o'};
 
 typedef struct{
     char a;
@@ -31,4 +32,9 @@ void test_string(char* buff, const char* a)
 {
     sprintf(buff,"you say %s", a);
     printf("%s\n", buff);
+}
+
+char * buff()
+{
+    return data;
 }

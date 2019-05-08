@@ -529,6 +529,18 @@ static int l_ffi_offset(lua_State* L)
 	lua_pushnil(L);
 	return 1;
 }
+static int l_ffi_byte_at(lua_State* L)
+{
+	void* ptr = lua_touserdata(L, 1);
+	int off = luaL_checkinteger(L,2);
+	if(ptr)
+	{
+		lua_pushnumber(L, *((uint8_t*)(ptr + off)));
+		return 1;
+	}
+	lua_pushnil(L);
+	return 1;
+}
 static int l_ffi_string(lua_State* L)
 {
 	void* ptr = lua_touserdata(L,1);
@@ -546,6 +558,16 @@ static int l_ffi_free(lua_State* L)
 	lua_pushboolean(L, 1);
 	return 1;
 }
+static int l_ffi_bytearray(lua_State* L)
+{
+	void* ptr = lua_touserdata(L,1);
+	int size = luaL_checknumber(L,2);
+	//create new bytearray
+	lua_new_byte_array(L,size);
+	byte_array_t *ba = l_check_barray(L,-1);
+	memcpy(ba->data, ptr, size);
+	return 1;
+}
 static const struct luaL_Reg _lib [] = {
 	{"dlopen", l_dlopen},
 	{"dlsym",l_dlsym},
@@ -556,8 +578,11 @@ static const struct luaL_Reg _lib [] = {
 	{"new", l_ffi_new},
 	{"meta", l_ffi_meta},
 	{"at", l_ffi_offset},
+	{"byteAt", l_ffi_byte_at},
 	// special case: pointer to string
 	{"string", l_ffi_string},
+	// pointer to byte array
+	{"bytearray", l_ffi_bytearray},
 	{"free", l_ffi_free},
 	{NULL,NULL}
 };

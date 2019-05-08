@@ -55,6 +55,15 @@ if lib then
         
     end
     
+
+
+    fn = FFI.lookup(lib, "buff")
+    if(fn) then
+        local ptr = FFI.call(FFI.atomic(FFI.type.POINTER),{}, fn, {})
+        echo(FFI.string(ptr))
+        
+    end
+
    FFI.unloadAll()
 end
 echo("end the day")
