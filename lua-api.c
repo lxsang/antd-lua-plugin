@@ -101,7 +101,7 @@ void* handle(void* data)
 		free(cnf);
 	if(apis)
 		free(apis);
-	return antd_create_task(NULL, (void*)rq, NULL);
+	return antd_create_task(NULL, (void*)rq, NULL,time(NULL));
 	//lua_close(L);
 }
 void destroy()
