@@ -1,5 +1,6 @@
+#include <antd/dbhelper.h>
 #include "lua-api.h"
-
+typedef sqlite3* sqldb;
 //sqldb db = NULL;
 
 static int l_getdb (lua_State *L) {

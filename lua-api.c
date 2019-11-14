@@ -1,3 +1,4 @@
+#include <antd/plugin.h>
 #include "lua-api.h"
 
 static const struct luaL_Reg modules [] = {
@@ -101,7 +102,7 @@ void* handle(void* data)
 		free(cnf);
 	if(apis)
 		free(apis);
-	return antd_create_task(NULL, (void*)rq, NULL,rq->client->last_io);
+	return antd_create_task(NULL, (void*)rq, NULL,time(NULL));
 	//lua_close(L);
 }
 void destroy()

@@ -2,7 +2,7 @@
 __ROOT__ = __api__.root
 -- set require path
 package.path = __ROOT__ .. '/?.lua;'..__api__.apiroot..'/?.lua'
-package.cpath = __api__.apiroot..'/?.llib'
+package.cpath = __api__.apiroot..'/?.so'
 require("std")
 require("utils")
 require("extra_mime")

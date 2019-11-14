@@ -71,6 +71,10 @@ clean:
 depend:
 	@$(CC) $(CFLAGS) -MM l*.c
 
+distdir:
+
+install:
+
 echo:
 	@echo "PLAT= $(PLAT)"
 	@echo "CC= $(CC)"
