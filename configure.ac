@@ -61,6 +61,14 @@ AC_CHECK_LIB([readline],[read_history],[],[
     AC_MSG_ERROR([unable to find libreadline])
 ])
 
+# check for libffi using by lua module
+use_ffi=no
+AC_CHECK_HEADER([ffi.h],[
+    AC_CHECK_LIB([ffi],[ffi_prep_cif],[
+        use_ffi=yes
+    ],[])
+],[])
+
 AC_DEFINE([_GNU_SOURCE], [1],[Use GNU source])
 # AC_CANONICAL_HOST is needed to access the 'host_os' variable    
 
@@ -107,11 +115,22 @@ AM_CONDITIONAL([DB], [test "$use_db" = "yes"])
 AM_CONDITIONAL([LINUX], [test "$build_linux" = "yes"])
 AM_CONDITIONAL([WINDOWS], [test "$build_windows" = "yes"])
 AM_CONDITIONAL([OSX], [test "$build_mac" = "yes"])
+AM_CONDITIONAL([HAS_FFI], [test "$use_ffi" = "yes"])
 
-# find a file called Makefile.in, substitute placeholders
-# like @PACKAGE_VERSION@ with values like 0.1.0a, 
-# and write the results to Makefile.
-AC_CONFIG_FILES([3rd/Makefile Makefile lib/Makefile lib/ulib/Makefile lib/wurl/Makefile])
+# find all config files
+AC_CONFIG_FILES([
+    3rd/Makefile 
+    Makefile 
+    lib/Makefile
+    lib/ulib/Makefile
+    lib/wurl/Makefile
+    lib/stmr/Makefile
+])
 
+if test "$use_ffi" = "yes"; then
+    AC_CONFIG_FILES([lib/ffi/Makefile])
+fi
+
+# AC_SUBST([my_CPPFLAGS]) pass my_CPPFLAGS to the makefile.am
 # output the script:
 AC_OUTPUT
