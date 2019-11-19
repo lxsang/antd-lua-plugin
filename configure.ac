@@ -5,6 +5,11 @@ AC_INIT([lua], [0.5.2b], [xsang.le@gmail.com])
 # [subdir-objects] if needed
 AM_INIT_AUTOMAKE([subdir-objects])
 
+# custom definition
+
+AC_DEFUN(AC_PROG_CMAKE, [AC_CHECK_PROG(has_cmake,cmake,yes)])
+AC_PROG_CMAKE
+
 # dependencies
 # C compiler
 AC_PROG_CC
@@ -116,7 +121,7 @@ AM_CONDITIONAL([LINUX], [test "$build_linux" = "yes"])
 AM_CONDITIONAL([WINDOWS], [test "$build_windows" = "yes"])
 AM_CONDITIONAL([OSX], [test "$build_mac" = "yes"])
 AM_CONDITIONAL([HAS_FFI], [test "$use_ffi" = "yes"])
-
+AM_CONDITIONAL([HAS_CMAKE], [test "$has_cmake" = "yes"])
 # find all config files
 AC_CONFIG_FILES([
     3rd/Makefile 
@@ -129,6 +134,10 @@ AC_CONFIG_FILES([
 
 if test "$use_ffi" = "yes"; then
     AC_CONFIG_FILES([lib/ffi/Makefile])
+fi
+
+if test x"${has_cmake}" == x"yes" ; then
+    AC_CONFIG_FILES([lib/ann/Makefile lib/ann/fann/Makefile])
 fi
 
 # AC_SUBST([my_CPPFLAGS]) pass my_CPPFLAGS to the makefile.am

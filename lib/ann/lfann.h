@@ -21,9 +21,6 @@
 #define luaL_reg luaL_Reg
 #include <string.h>
 
-/* Lua */
-#include <lua.h>
-#include <lauxlib.h>
 
 /* FANN */
 #include <doublefann.h>
