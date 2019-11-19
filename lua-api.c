@@ -1,4 +1,4 @@
-#include <antd/plugin.h>
+#define PLUGIN_IMPLEMENT 1
 #include "lua-api.h"
 
 static const struct luaL_Reg modules [] = {

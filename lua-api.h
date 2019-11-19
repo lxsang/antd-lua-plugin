@@ -2,6 +2,7 @@
 #define LUA_API_H
 #include <antd/handle.h>
 #include <antd/utils.h>
+#include <antd/plugin.h>
 #include "3rd/lua-5.3.4/lua.h"
 #include "3rd/lua-5.3.4/lauxlib.h"
 #include "3rd/lua-5.3.4/lualib.h"

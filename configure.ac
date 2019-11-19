@@ -5,7 +5,6 @@ AC_INIT([lua], [0.5.2b], [xsang.le@gmail.com])
 # [subdir-objects] if needed
 AM_INIT_AUTOMAKE([subdir-objects])
 
-: ${CFLAGS="-g -O0"}
 # dependencies
 # C compiler
 AC_PROG_CC
