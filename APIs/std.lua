@@ -46,7 +46,7 @@ function std.f(v)
 	std._f(HTTP_REQUEST.id,v)
 end
 function std.fb(v)
-	std._fb(HTTP_REQUEST.id,v)
+	std._f(HTTP_REQUEST.id,v)
 end
 function std.setCookie(t,v,p)
 	p = p or ""

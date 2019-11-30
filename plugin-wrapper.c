@@ -112,12 +112,12 @@ static int l_f (lua_State *L) {
 }
 
 //int __fb(int, const char*);
-static int l_fb (lua_State *L) {
+/*static int l_fb (lua_State *L) {
 	void* client = lua_touserdata (L, 1);
 	const char*  v = luaL_checkstring(L, 2);
 	lua_pushnumber(L, __fb(client,v));
 	return 1;
-}
+}*/
 
 //int upload(const char*, const char*);
 static int l_upload (lua_State *L) {
@@ -497,7 +497,7 @@ static const struct luaL_Reg standard [] = {
 	   {"_ti", l_ti} ,
 	   {"_t", l_t} ,
 	   {"_f", l_f} ,
-	   {"_fb", l_fb} ,
+	   //{"_fb", l_fb} ,
 	   {"trim", l_trim},
 	   {"upload", l_upload} ,
 	   {"route", l_route} ,

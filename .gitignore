@@ -71,3 +71,6 @@ configure
 aclocal.m4
 ltmain.sh
 Makefile.in
+# others
+3rd/lua-5.3.4/lua
+3rd/lua-5.3.4/luac
