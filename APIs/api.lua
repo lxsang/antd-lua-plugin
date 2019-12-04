@@ -6,6 +6,7 @@ package.cpath = __api__.apiroot..'/?.so'
 require("std")
 require("utils")
 require("extra_mime")
+ulib = require("ulib")
 -- set session
 SESSION = {}
 

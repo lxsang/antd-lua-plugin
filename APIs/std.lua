@@ -117,6 +117,7 @@ end
 function std.is_file(f)
 	return  std.is_dir(f) == false
 end
+
 std.ws.TEXT = 1
 std.ws.BIN = 2
 std.ws.CLOSE = 8
