@@ -32,7 +32,7 @@ function std.mimeOf(name)
 	end
 end
 
-function std.isBinary(name)
+--[[ function std.isBinary(name)
 	local mime = std.mime(name)
 	if mime ~= "application/octet-stream" then
 		return std.is_bin(name)
@@ -40,7 +40,7 @@ function std.isBinary(name)
 		local xmime,bin = std.extra_mime(name)
 		return bin
 	end
-end
+end ]]
 
 function std.sendFile(m)
 	local mime = std.mimeOf(m)
@@ -48,28 +48,24 @@ function std.sendFile(m)
 	local len = tostring(math.floor(finfo.size))
 	local len1 = tostring(math.floor(finfo.size - 1))
 	if mime == "audio/mpeg" then
-		std.status(200, "OK")
-		std.custom_header("Pragma", "public")
-		std.custom_header("Expires", "0")
-		std.custom_header("Content-Type", mime)
-		std.custom_header("Content-Length", len)
-		std.custom_header("Content-Disposition", "inline; filename=" .. std.basename(m))
-		std.custom_header("Content-Range:", "bytes 0-" .. len1 .. "/" .. len)
-		std.custom_header("Accept-Ranges", "bytes")
-		std.custom_header("X-Pad", "avoid browser bug")
-		std.custom_header("Content-Transfer-Encoding", "binary")
-		std.custom_header("Cache-Control", "no-cache, no-store")
-		std.custom_header("Connection", "Keep-Alive")
-		std.custom_header("Etag", "a404b-c3f-47c3a14937c80")
+		std.status(200)
+		std.header("Pragma", "public")
+		std.header("Expires", "0")
+		std.header("Content-Type", mime)
+		std.header("Content-Length", len)
+		std.header("Content-Disposition", "inline; filename=" .. std.basename(m))
+		std.header("Content-Range:", "bytes 0-" .. len1 .. "/" .. len)
+		std.header("Accept-Ranges", "bytes")
+		std.header("X-Pad", "avoid browser bug")
+		std.header("Content-Transfer-Encoding", "binary")
+		std.header("Cache-Control", "no-cache, no-store")
+		std.header("Connection", "Keep-Alive")
+		std.header("Etag", "a404b-c3f-47c3a14937c80")
 	else
-		std.status(200, "OK")
-		std.custom_header("Content-Type", mime)
-		std.custom_header("Content-Length", len)
+		std.status(200)
+		std.header("Content-Type", mime)
+		std.header("Content-Length", len)
 	end
 	std.header_flush()
-	if std.is_bin(m) then
-		std.fb(m)
-	else
-		std.f(m)
-	end
+	std.f(m)
 end

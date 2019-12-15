@@ -5,7 +5,7 @@ local wurl = require("wurl")
 
 local web = {}
 
-web.undestand = function(proto)
+web.understand = function(proto)
 	if proto == "http" or proto == "https" then 
 		return true 
 	else 
@@ -15,7 +15,7 @@ end
 
 web.get = function(url)
 	local obj = utils.url_parser(url)
-	if web.undestand(obj.protocol) then
+	if web.understand(obj.protocol) then
 		return wurl._get(obj.hostname,obj.port, obj.query)
 	else
 		return nil,"Protocol is unsupported: "..obj.protocol
@@ -25,7 +25,7 @@ end
 
 web.post = function(url,data)
 	local obj = utils.url_parser(url)
-	if web.undestand(obj.protocol) then
+	if web.understand(obj.protocol) then
 		if type(data) == "string" then
 			return wurl._post(obj.hostname,
 					obj.port,
@@ -44,7 +44,7 @@ end
 
 web.download = function(url,to)
 	local obj = utils.url_parser(url)
-	if web.undestand(obj.protocol) then
+	if web.understand(obj.protocol) then
 		local file
 		if std.is_dir(to) then
 			-- need to find file name here
@@ -64,7 +64,7 @@ end
 
 web.upload = function(url,name,file)
 	local obj = utils.url_parser(url)
-	if web.undestand(obj.protocol) then
+	if web.understand(obj.protocol) then
 		return wurl._upload(obj.hostname,obj.port,obj.query,name,file)
 	else
 		return nil,"Protocol is unsupported: "..obj.protocol

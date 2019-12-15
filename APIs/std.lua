@@ -1,72 +1,102 @@
 std = modules.std()
 bytes = modules.bytes()
 array = modules.array()
-function std.html()
-	std._html(HTTP_REQUEST.id)
-end
-function std.text()
-	std._text(HTTP_REQUEST.id)
-end
-function std.status(code, msg)
-	std._status(HTTP_REQUEST.id, code, msg)
+RESPONSE_HEADER = {
+	status = 200,
+	header = {},
+	cookie = {},
+	sent = false
+}
+
+function std.status(code)
+	RESPONSE_HEADER.status=code
 end
 function std.custom_header(k,v)
-	--print(k..":"..v)
-	std.t(k..": "..v)
+	std.header(k,v)
 end
 function std.header_flush()
-	std.t("")
+	std._send_header(HTTP_REQUEST.id,RESPONSE_HEADER.status, RESPONSE_HEADER.header, RESPONSE_HEADER.cookie)
+	RESPONSE_HEADER.sent = true
 end
---_redirect
-function std.redirect(s)
-	std._redirect(HTTP_REQUEST.id,s)
+
+function std.header(k,v)
+	RESPONSE_HEADER.header[k] = v
 end
-function std.json()
-	std._json(HTTP_REQUEST.id)
+
+function std.cjson(ck)
+	for k,v in pairs(ck) do
+		std.setCookie(k.."="..v.."; Path=/")
+	end
+	std.header("Content-Type","application/json")
+	std.header_flush()
 end
-function std.jpeg()
-	std._jpeg(HTTP_REQUEST.id)
-end
-function std.header(s)
-	std._header(HTTP_REQUEST.id,s)
-end
-function std.octstream(s)
-	std._octstream(HTTP_REQUEST.id,s)
-end
-function std.textstream()
-	std._textstream(HTTP_REQUEST.id)
-end
-function std.ti(v)
-	std._ti(HTTP_REQUEST.id,v)
+function std.chtml(ck)
+	for k,v in pairs(ck) do
+		std.setCookie(k.."="..v.."; Path=/")
+	end
+	std.header("Content-Type","text/html")
+	std.header_flush()
 end
 function std.t(s)
+	if RESPONSE_HEADER.sent == false then
+		std.header_flush()
+	end
 	std._t(HTTP_REQUEST.id,s)
+end
+function std.b(s)
+	if RESPONSE_HEADER.sent == false then
+		std.header_flush()
+	end
+	std._b(HTTP_REQUEST.id,s)
 end
 function std.f(v)
 	std._f(HTTP_REQUEST.id,v)
 end
-function std.fb(v)
-	std._f(HTTP_REQUEST.id,v)
+
+function std.setCookie(v)
+	RESPONSE_HEADER.cookie[#RESPONSE_HEADER.cookie] = v
 end
-function std.setCookie(t,v,p)
-	p = p or ""
-	std._setCookie(HTTP_REQUEST.id,t,v,p)
-end
-function std.cjson(v, p)
-	
-	std.setCookie("application/json; charset=utf-8",v)
-end
-function std.chtml(v)
-	std.setCookie("text/html; charset=utf-8",v)
-end
-function std.ctext(v)
-	std.setCookie("text/plain; charset=utf-8",v)
+
+function std.error(status, msg)
+	std._error(HTTP_REQUEST.id, status, msg)
 end
 --_upload
 --_route
 function std.unknow(s)
-	std._unknow(HTTP_REQUEST.id,s)
+	std.error(404, "Unknown request")
 end
+
+--_redirect
+--[[ function std.redirect(s)
+	std._redirect(HTTP_REQUEST.id,s)
+end ]]
+
+function std.html()
+	std.header("Content-Type","text/html")
+	std.header_flush()
+end
+function std.text()
+	std.header("Content-Type","text/plain")
+	std.header_flush()
+end
+
+function std.json()
+	std.header("Content-Type","application/json")
+	std.header_flush()
+end
+function std.jpeg()
+	std.header("Content-Type","image/jpeg")
+	std.header_flush()
+end
+function std.octstream(s)
+	std.header("Content-Type","application/octet-stream")
+	std.header("Content-Disposition",'attachment; filename="'..s..'"')
+	std.header_flush()
+end
+--[[ function std.textstream()
+	std._textstream(HTTP_REQUEST.id)
+end ]]
+
 
 function std.readOnly(t) -- bugging
     local proxy = {}

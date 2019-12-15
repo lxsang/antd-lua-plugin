@@ -16,6 +16,7 @@
 #include <libgen.h>
 
 #include "../lualib.h"
+#include "../../lua-api.h"
 #include <antd/utils.h>
 	
 #define CLIENT_NAME "wurl"
@@ -475,26 +476,22 @@ static int l_get(lua_State *L)
 	if(wurl_request(host,port,&rq,1) == 0)
 	{
 		//printf("Content type is %s\n", rq.ctype);
-		mime_t m = mime_from_type(rq.ctype);
+		//mime_t m = mime_from_type(rq.ctype);
 		lua_newtable(L);
 		lua_pushstring(L,"contentType");
 		lua_pushstring(L,rq.ctype);
 		lua_settable(L,-3);
 		
+		/*
 		lua_pushstring(L,"binary");
 		lua_pushboolean(L,m.bin);
-		lua_settable(L,-3);
+		lua_settable(L,-3);*/
 		
 		lua_pushstring(L,"data");
-		if(m.bin)
-		{
-			//printf("Data is binary, encode as base64 %s\n", rq.ctype);
-			char* dst = (char*) malloc(3*rq.clen/2);
-			Base64encode(dst, (const char*)rq.data,rq.clen);
-			lua_pushstring(L,dst);
-			free(dst);
-		} else
-			lua_pushstring(L,(const char*)rq.data);
+		// byte array, that can be convert to string later
+		lua_new_byte_array(L,rq.clen);
+		byte_array_t* arr = l_check_barray(L,-1);
+		memcpy(arr->data,rq.data,rq.clen);
 		free(rq.data); // be careful
 		lua_settable(L,-3);
 		return 1;
@@ -529,20 +526,15 @@ static int l_post(lua_State *L)
 		lua_pushstring(L,rq.ctype);
 		lua_settable(L,-3);
 		
-		lua_pushstring(L,"binary");
+		/*lua_pushstring(L,"binary");
 		lua_pushboolean(L,m.bin);
 		lua_settable(L,-3);
-		
+		*/
+
 		lua_pushstring(L,"data");
-		if(m.bin)
-		{
-			//printf("Data is binary, encode as base64 %s\n", rq.ctype);
-			char* dst = (char*) malloc(3*rq.clen/2);
-			Base64encode(dst, (const char*)rq.data,rq.clen);
-			lua_pushstring(L,dst);
-			free(dst);
-		} else
-			lua_pushstring(L,(const char*)rq.data);
+		lua_new_byte_array(L,rq.clen);
+		byte_array_t* arr = l_check_barray(L,-1);
+		memcpy(arr->data,rq.data,rq.clen);
 		free(rq.data); // be careful
 		lua_settable(L,-3);
 		return 1;

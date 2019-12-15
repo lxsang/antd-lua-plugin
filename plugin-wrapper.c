@@ -2,64 +2,74 @@
 #include "lua-api.h"
 
 //void header(int,const char*);
+/*
 static int l_header (lua_State *L) {
 	//int client = (int)luaL_checknumber(L, 1);
 	void* client = lua_touserdata (L, 1);
 	const char* s = luaL_checkstring(L,2);
 	ctype(client,s);
-	return 0;  /* number of results */
+	return 0;  
 }
+*/
 
 //void redirect(int,const char*);
+/*
 static int l_redirect (lua_State *L) {
 	void* client = lua_touserdata (L, 1);
 	const char* s = luaL_checkstring(L,2);
 	redirect(client,s);
-	return 0;  /* number of results */
-}
+	return 0; 
+}*/
 
-//void html(int);
+/*
 static int l_html (lua_State *L) {
 	void* client = lua_touserdata (L, 1);
 	html(client);
-	return 0;  /* number of results */
+	return 0;  
 }
+*/
 
 //void text(int);
+/*
 static int l_text (lua_State *L) {
 	void* client = lua_touserdata (L, 1);
 	text(client);
-	return 0;  /* number of results */
+	return 0;  
 }
+*/
 
 //void json(int);
+/*
 static int l_json (lua_State *L) {
 	void* client = lua_touserdata (L, 1);
 	json(client);
-	return 0;  /* number of results */
-}
+	return 0;  
+}*/
 
 //void jpeg(int);
+/*
 static int l_jpeg (lua_State *L) {
 	void* client = lua_touserdata (L, 1);
 	jpeg(client);
-	return 0;  /* number of results */
-}
+	return 0;  
+}*/
 
 //void octstream(int, char*);
+/*
 static int l_octstream (lua_State *L) {
 	void* client = lua_touserdata (L, 1);
 	const char* s = luaL_checkstring(L,2);
 	octstream(client,(char*)s);
-	return 0;  /* number of results */
-}
+	return 0;  
+}*/
 
 //void textstream(int);
+/*
 static int l_textstream (lua_State *L) {
 	void* client = lua_touserdata (L, 1);
 	textstream(client);
-	return 0;  /* number of results */
-}
+	return 0;  
+}*/
 // int mime
 static int l_mime(lua_State* L)
 {
@@ -77,19 +87,22 @@ static int l_ext(lua_State* L)
 		free(e);
 	return 1;
 }
+/*
 static int l_is_bin(lua_State* L)
 {
 	const char* file = luaL_checkstring(L,1);
 	lua_pushboolean(L, is_bin(file));
 	return 1;
-}
+}*/
 //int __ti(int,int);
+/*
 static int l_ti (lua_State *L) {
 	void* client = lua_touserdata (L, 1);
 	int v = (int)luaL_checknumber(L, 2);
 	lua_pushnumber(L, __ti(client,v));
-	return 1;  /* number of results */
+	return 1; 
 }
+*/
 
 //int __t(int, const char*,...);
 static int l_t (lua_State *L) {
@@ -99,9 +112,14 @@ static int l_t (lua_State *L) {
 	return 1;  /* number of results */
 }
 
+// TODO: add __b to LUA
 //int __b(int, const unsigned char*, int);
-//static int l_b (lua_State *L) {
-//}
+static int l_b (lua_State *L) {
+	void * client = lua_touserdata(L,1);
+	byte_array_t * arr = l_check_barray(L,2);
+	lua_pushnumber(L, __b(client, arr->data,arr->size));
+	return 1;
+}
 
 //int __f(int, const char*);
 static int l_f (lua_State *L) {
@@ -135,31 +153,33 @@ static int l_route (lua_State *L) {
 }
 
 //char* htdocs(const char*);
-#ifdef USE_DB
+//#ifdef USE_DB
 //sqldb getdb();
-#endif
+//#endif
 //void set_cookie(int,dictionary);
 
 //void unknow(int);
+/*
 static int l_unknow (lua_State *L) {
 	void* client = lua_touserdata (L, 1);
 	unknow(client);
 	return 0;
 }
+*/
 
 static int l_log(lua_State *L)
 {
 	const char* s = luaL_checkstring(L,1);
-	LOG("%s",s);
+	server_log("%s",s);
 	return 0;
 }
 
-dictionary iterate_lua_table(lua_State *L, int index)
+dictionary_t iterate_lua_table(lua_State *L, int index)
 {
     // Push another reference to the table on top of the stack (so we know
     // where it is, and this function can work for negative, positive and
     // pseudo indices
-	dictionary dic = dict();
+	dictionary_t dic = dict();
     lua_pushvalue(L, index);
     // stack now contains: -1 => table
     lua_pushnil(L);
@@ -175,7 +195,7 @@ dictionary iterate_lua_table(lua_State *L, int index)
         {
 			// the element is a table
 			// create new dictionary
-			dictionary cdic = iterate_lua_table(L,-2);
+			dictionary_t cdic = iterate_lua_table(L,-2);
 			dput(dic,key, cdic);
 		}
 		else
@@ -198,11 +218,12 @@ dictionary iterate_lua_table(lua_State *L, int index)
 	return dic;
 }
 
+/*
 static int l_set_cookie(lua_State* L)
 {
 	if (lua_istable(L, 3))
 	{
-		dictionary d = iterate_lua_table(L,-2);
+		dictionary_t d = iterate_lua_table(L,-2);
 		if(d)
 		{
 			void* client = lua_touserdata (L, 1);
@@ -213,7 +234,8 @@ static int l_set_cookie(lua_State* L)
 		}
 	}
 	return 0;
-}
+}*/
+
 static int l_simple_hash(lua_State* L)
 {
 	const char* s = luaL_checkstring(L,1);
@@ -351,7 +373,7 @@ static int l_ws_read_header(lua_State *L)
 		 lua_pushnil(L);
 		 return 1;
 	 }
-	 dictionary dic = iterate_lua_table(L,2);
+	 dictionary_t dic = iterate_lua_table(L,2);
 	 if(dic)
 	 {
 		 // convert dictionary to header
@@ -360,7 +382,7 @@ static int l_ws_read_header(lua_State *L)
 		 header->opcode = (uint8_t)(R_INT(dic,"opcode"));
 		 header->mask = 1;
 		 header->plen = R_INT(dic,"plen");
-		 dictionary d1 = (dictionary)dvalue(dic,"mask_key");
+		 dictionary_t d1 = (dictionary_t)dvalue(dic,"mask_key");
 		 if(d1)
 		 {
 			 header->mask_key[0] = (uint8_t)(R_INT(d1,"0"));
@@ -430,14 +452,15 @@ static int l_ws_t(lua_State*L)
 	ws_t(client,str);
 	return 1;
 }
-static int l_status(lua_State*L)
+/*static int l_status(lua_State*L)
 {
 	void* client = lua_touserdata (L, 1);
 	int code = (int) luaL_checknumber(L,2);
 	const char* msg = luaL_checkstring(L,3);
 	set_status(client,code,msg);
 	return 1;
-}
+}*/
+
 /*
  * send a file as binary data
  */
@@ -482,31 +505,73 @@ static int l_status(lua_State*L)
 	 return 1;
  }
 
+static int l_std_error(lua_State* L)
+{
+	void* client = lua_touserdata (L, 1);
+	int status = luaL_checknumber(L,2);
+	const char* msg = luaL_checkstring(L,3);
+	antd_error(client, status, msg);
+	return 1;
+}
+static int l_send_header(lua_State* L)
+{
+	if (lua_istable(L, 3))
+	{
+		dictionary_t d = iterate_lua_table(L,-2);
+		if(d)
+		{
+			void* client = lua_touserdata (L, 1);
+			int status = luaL_checknumber(L,2);
+			antd_response_header_t h;
+			h.status = status;
+			h.header = d;
+			dictionary_t c = iterate_lua_table(L,-1);
+			h.cookie = NULL;
+			if(c)
+			{
+				h.cookie = list_init();
+				if(h.cookie)
+				{
+					chain_t it;
+					for_each_assoc(it,c)
+					{
+						list_put_s(&h.cookie,strdup(it->value));
+					}
+				}
+				freedict(c);
+			}
+			antd_send_header(client, &h);
+		}
+	}
+	return 1;
+}
 
 static const struct luaL_Reg standard [] = {
-       {"_header", l_header},
-	   {"_redirect", l_redirect},
-	   {"_html", l_html},
-	   {"_text", l_text},
-	   {"_json", l_json},
-	   {"_jpeg", l_jpeg},
+       //{"_header", l_header},
+	   //{"_redirect", l_redirect},
+	   //{"_html", l_html},
+	   //{"_text", l_text},
+	   //{"_json", l_json},
+	   //{"_jpeg", l_jpeg},
+	   {"_error", l_std_error},
+	   {"_send_header", l_send_header},
 	   {"b64encode", l_base64_encode},
 	   {"b64decode", l_base64_decode},
-	   {"_octstream", l_octstream} ,
-	   {"_textstream", l_textstream} ,
-	   {"_ti", l_ti} ,
+	   //{"_octstream", l_octstream} ,
+	   //{"_textstream", l_textstream} ,
+	   //{"_ti", l_ti} ,
 	   {"_t", l_t} ,
 	   {"_f", l_f} ,
-	   //{"_fb", l_fb} ,
+	   {"_b", l_b} ,
 	   {"trim", l_trim},
 	   {"upload", l_upload} ,
 	   {"route", l_route} ,
 	   {"mime", l_mime} ,
-	   {"is_bin", l_is_bin} ,
-	   {"_unknow", l_unknow} ,
-	   {"_status", l_status},
+	   //{"is_bin", l_is_bin} ,
+	   //{"_unknow", l_unknow} ,
+	   //{"_status", l_status},
 	   {"console", l_log} ,
-	   {"_setCookie", l_set_cookie},
+	   //{"_setCookie", l_set_cookie},
 	   {"hash",l_simple_hash},
 	   {"md5",l_md5},
 	   {"sha1",l_sha1},

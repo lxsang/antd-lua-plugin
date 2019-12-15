@@ -21,18 +21,18 @@ void init()
 * Plugin handler, reads request from the server and processes it
 * 
 */
-static void push_dict_to_lua(lua_State* L, dictionary d)
+static void push_dict_to_lua(lua_State* L, dictionary_t d)
 {
 	lua_newtable(L);
 	
-	association as;
+	chain_t as;
 	if(d)
 		for_each_assoc(as, d)
 		{
 			lua_pushstring(L,as->key);
 			//printf("KEY %s\n", as->key);
 			if(EQU(as->key,"COOKIE") || EQU(as->key,"REQUEST_HEADER") || EQU(as->key,"REQUEST_DATA") )
-				push_dict_to_lua(L, (dictionary)as->value);
+				push_dict_to_lua(L, (dictionary_t)as->value);
 			else
 			{
 				lua_pushstring(L,as->value);
