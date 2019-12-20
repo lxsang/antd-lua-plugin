@@ -62,11 +62,15 @@ void* handle(void* data)
 	lua_settable(L,-3);
 	
 	lua_pushstring(L,"root");
-	lua_pushstring(L, __plugin__->htdocs);
+	lua_pushstring(L, rq->client->port_config->htdocs);
 	lua_settable(L,-3);
 	
 	lua_pushstring(L,"apiroot");
 	lua_pushstring(L, cnf);
+	lua_settable(L,-3);
+
+	lua_pushstring(L,"tmpdir");
+	lua_pushstring(L, tmpdir());
 	lua_settable(L,-3);
 	
 	lua_setglobal(L, "__api__");
