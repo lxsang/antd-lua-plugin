@@ -535,7 +535,7 @@ static int l_send_header(lua_State* L)
 					chain_t it;
 					for_each_assoc(it,c)
 					{
-						list_put_s(&h.cookie,strdup(it->value));
+						list_put_ptr(&h.cookie,strdup(it->value));
 					}
 				}
 				freedict(c);
