@@ -1,5 +1,8 @@
 #define PLUGIN_IMPLEMENT 1
+#include <dlfcn.h>
 #include "lua-api.h"
+
+static void* core_handle = NULL;
 
 static const struct luaL_Reg modules [] = {
 #ifdef USE_DB
@@ -14,7 +17,17 @@ static const struct luaL_Reg modules [] = {
 
 void init()
 {
-	LOG("%s \n","INIT LUA HANDLER");
+	char* path = __s("%s/lua/core.so", __plugin__.pdir);
+	core_handle = dlopen(path, RTLD_NOW| RTLD_GLOBAL);
+	if(!core_handle)
+	{
+		ERROR("Cannot load Lua core; %s", dlerror());
+	}
+	else
+	{
+		LOG("Lua core loaded");
+	}
+	free(path);
 }
 /**
 
@@ -111,5 +124,7 @@ void* handle(void* data)
 }
 void destroy()
 {
-	LOG("%s \n","Exit LUA Handle");
+	if(core_handle)
+		dlclose(core_handle);
+	LOG("Exit LUA Handle");
 }

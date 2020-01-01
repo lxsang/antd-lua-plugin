@@ -21,7 +21,6 @@ lua_la_SOURCES =  plugin-wrapper.c\
 				array-wrapper.c \
 				json-wrapper.c \
                 lua-api.c
-lua_la_LIBADD = $(srcdir)/3rd/lua-5.3.4/liblua.a
 
 # lua libraris &  modules
 SUBDIRS = 3rd . lib
@@ -35,3 +34,4 @@ EXTRA_DIST = README.md 3rd/jsmn/jsmn.h APIs lua-api.h
 install-data-local:
 	mkdir -p $(prefix)/lib/lua
 	cp -v APIs/* $(prefix)/lib/lua
+	cp -v 3rd/lua-5.3.4/core.so $(prefix)/lib/lua
