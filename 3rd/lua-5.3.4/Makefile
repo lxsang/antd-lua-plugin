@@ -60,7 +60,7 @@ $(LUA_A): $(BASE_O)
 	$(RANLIB) $@
 
 $(LUA_SO): $(BASE_O)
-	gcc -shared $(BASE_O) -o $@
+	gcc -shared $(BASE_O) -o $@ -ldl -lm
 
 $(LUA_T): $(LUA_O) $(LUA_A)
 	$(CC) -o $@ $(LDFLAGS) $(LUA_O) $(LUA_A) $(LIBS)
