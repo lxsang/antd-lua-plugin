@@ -83,7 +83,7 @@ function utils.url_parser(uri)
 	return obj
 end
 
-JSON = modules.JSON()
+JSON = require("json")
 
 function JSON.encode(obj)
 	local t = type(obj)

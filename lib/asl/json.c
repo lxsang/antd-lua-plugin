@@ -1,4 +1,4 @@
-#include "lua-api.h"
+#include "../lualib.h"
 #include "3rd/jsmn/jsmn.h"
 
 #define MAXTOKEN 1024

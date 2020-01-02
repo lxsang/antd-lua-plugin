@@ -1,5 +1,5 @@
 #include <antd/dbhelper.h>
-#include "lua-api.h"
+#include "../lualib.h"
 typedef sqlite3* sqldb;
 //sqldb db = NULL;
 
@@ -8,7 +8,7 @@ static int l_getdb (lua_State *L) {
 //	if(db)
 //		dbclose(db);
 	//printf("OPEN: %s\n",s);
-	sqldb db = __getdb((char*)s);
+	sqldb db = (sqldb)database(s);
 	if(db)
 		lua_pushlightuserdata(L, db);
 	else
@@ -98,7 +98,7 @@ static int l_hastable(lua_State *L)
 	return 1;
 }
 static const struct luaL_Reg sqlite [] = {
-       {"getdb", l_getdb},
+       {"_getdb", l_getdb},
 	   {"dbclose", l_db_close},
 	   {"query", l_db_query},
 	   {"lastInsertID", l_db_lastid},
@@ -107,7 +107,7 @@ static const struct luaL_Reg sqlite [] = {
 	   {NULL,NULL}  
 };
 
-int luaopen_sqlite(lua_State *L)
+int luaopen_sqlitedb(lua_State *L)
 {
 	luaL_newlib(L, sqlite);
 	return 1;

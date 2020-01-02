@@ -1,6 +1,17 @@
 std = modules.std()
 bytes = modules.bytes()
 array = modules.array()
+
+modules.sqlite = function()
+    if not sqlite then
+        sqlite = require("sqlitedb")
+		sqlite.getdb = function(s)
+			return sqlite._getdb(__api__.dbpath.."/"..s..".db")
+		end
+	end
+	return sqlite
+end
+
 RESPONSE_HEADER = {
 	status = 200,
 	header = {},

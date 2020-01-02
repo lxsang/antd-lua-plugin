@@ -1,19 +1,11 @@
 #define PLUGIN_IMPLEMENT 1
 #include <dlfcn.h>
-#include "lua-api.h"
+#include <antd/plugin.h>
+
+#include "lib/lualib.h"
 
 static void* core_handle = NULL;
 
-static const struct luaL_Reg modules [] = {
-#ifdef USE_DB
-       {"sqlite", luaopen_sqlite},
-#endif
-	   {"std", luaopen_standard},
-	   {"JSON", luaopen_json},
-	   {"bytes",luaopen_barray},
-	   {"array",luaopen_array},
-	   {NULL,NULL}  
-};
 
 void init()
 {
@@ -65,8 +57,8 @@ void* handle(void* data)
 	L = luaL_newstate();
 	luaL_openlibs(L);
 	//module loader
-	luaL_newlib(L, modules);
-	lua_setglobal(L, "modules");
+	//luaL_newlib(L, modules);
+	//lua_setglobal(L, "modules");
 	// set up global variable
 	// API header
 	lua_newtable(L);
@@ -84,6 +76,10 @@ void* handle(void* data)
 
 	lua_pushstring(L,"tmpdir");
 	lua_pushstring(L, tmpdir());
+	lua_settable(L,-3);
+
+	lua_pushstring(L,"dbpath");
+	lua_pushstring(L, __plugin__->dbpath);
 	lua_settable(L,-3);
 	
 	lua_setglobal(L, "__api__");
@@ -103,7 +99,7 @@ void* handle(void* data)
 	if(is_file(apis))
 		if (luaL_loadfile(L, apis) || lua_pcall(L, 0, 0, 0))
 		{
-			LOG( "cannot run apis. file: %s\n", lua_tostring(L, -1));
+			ERROR( "cannot start API file: [%s] %s\n", apis, lua_tostring(L, -1));
 		}
 	
 	/*if (luaL_loadfile(L, index) || lua_pcall(L, 0, 0, 0))

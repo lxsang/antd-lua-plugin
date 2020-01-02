@@ -124,17 +124,11 @@ AM_CONDITIONAL([HAS_FFI], [test "$use_ffi" = "yes"])
 AM_CONDITIONAL([HAS_CMAKE], [test "$has_cmake" = "yes"])
 # find all config files
 AC_CONFIG_FILES([
-    3rd/Makefile 
     Makefile 
     lib/Makefile
-    lib/ulib/Makefile
-    lib/wurl/Makefile
-    lib/stmr/Makefile
+    lib/core/Makefile
+    lib/asl/Makefile
 ])
-
-if test "$use_ffi" = "yes"; then
-    AC_CONFIG_FILES([lib/ffi/Makefile])
-fi
 
 if test x"${has_cmake}" == x"yes" ; then
     AC_CONFIG_FILES([lib/ann/Makefile lib/ann/fann/Makefile])
