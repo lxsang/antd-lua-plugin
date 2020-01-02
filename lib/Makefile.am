@@ -1,7 +1,4 @@
-SUBDIRS = ulib wurl stmr
-if HAS_FFI
-    SUBDIRS += ffi
-endif
+SUBDIRS = core asl
 if HAS_CMAKE
     SUBDIRS += ann
 endif

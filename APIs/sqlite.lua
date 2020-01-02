@@ -1,4 +1,4 @@
-sqlite = modules.sqlite()
+sqlite =  modules.sqlite()
 
 if sqlite == nil then return 0 end
 require("OOP")
