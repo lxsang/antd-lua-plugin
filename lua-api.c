@@ -49,6 +49,7 @@ static void push_dict_to_lua(lua_State* L, dictionary_t d)
 void* handle(void* data)
 {
 	antd_request_t* rq = (antd_request_t*) data;
+	char buf[BUFFLEN];
 	plugin_header_t* __plugin__ = meta();
 	lua_State* L = NULL;
 	//char * index = __s("%s/%s",__plugin__.htdocs,"router.lua");
@@ -67,7 +68,8 @@ void* handle(void* data)
 	lua_settable(L,-3);
 	
 	lua_pushstring(L,"root");
-	lua_pushstring(L, rq->client->port_config->htdocs);
+	htdocs(rq, buf);
+	lua_pushstring(L, buf);
 	lua_settable(L,-3);
 	
 	lua_pushstring(L,"apiroot");
@@ -75,7 +77,8 @@ void* handle(void* data)
 	lua_settable(L,-3);
 
 	lua_pushstring(L,"tmpdir");
-	lua_pushstring(L, tmpdir());
+	tmpdir(buf);
+	lua_pushstring(L, buf);
 	lua_settable(L,-3);
 
 	lua_pushstring(L,"dbpath");
