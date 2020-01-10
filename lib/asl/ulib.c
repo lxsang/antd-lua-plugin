@@ -255,13 +255,13 @@ static int l_file_stat(lua_State* L, const char* path)
 		
 		//ctime
 		lua_pushstring(L,"ctime");
-		strftime(date, sizeof(date), "%Y-%m-%dT%H:%M:%S", localtime(&(st.st_ctime)));
+		timestr(st.st_ctime,date,sizeof(date),"%a, %d %b %Y %H:%M:%S GMT",1);
 		lua_pushstring(L,date);
 		lua_settable(L,-3);
 		//mtime
 		
 		lua_pushstring(L,"mtime");
-		strftime(date, sizeof(date), "%Y-%m-%dT%H:%M:%S", localtime(&(st.st_mtime)));
+		timestr(st.st_mtime,date,sizeof(date),"%a, %d %b %Y %H:%M:%S GMT",1);
 		lua_pushstring(L,date);
 		lua_settable(L,-3);
 		

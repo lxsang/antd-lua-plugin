@@ -60,12 +60,20 @@ function std.sendFile(m)
 		std.header("Content-Transfer-Encoding", "binary")
 		std.header("Cache-Control", "no-cache, no-store")
 		std.header("Connection", "Keep-Alive")
-		std.header("Etag", "a404b-c3f-47c3a14937c80")
+		std.header_flush()
+		std.f(m)
 	else
-		std.status(200)
-		std.header("Content-Type", mime)
-		std.header("Content-Length", len)
+		if HEADER['If-Modified-Since'] and HEADER['If-Modified-Since'] == finfo.ctime then
+			std.status(304)
+			std.header_flush()
+		else
+			std.status(200)
+			std.header("Content-Type", mime)
+			--std.header("Content-Length", len)
+			std.header("Cache-Control", "no-cache")
+			std.header("Last-Modified", finfo.ctime)
+			std.header_flush()
+			std.f(m)
+		end
 	end
-	std.header_flush()
-	std.f(m)
 end
