@@ -38,14 +38,14 @@ function std.cjson(ck)
 	for k,v in pairs(ck) do
 		std.setCookie(k.."="..v.."; Path=/")
 	end
-	std.header("Content-Type","application/json")
+	std.header("Content-Type","application/json; charset=utf-8")
 	std.header_flush()
 end
 function std.chtml(ck)
 	for k,v in pairs(ck) do
 		std.setCookie(k.."="..v.."; Path=/")
 	end
-	std.header("Content-Type","text/html")
+	std.header("Content-Type","text/html; charset=utf-8")
 	std.header_flush()
 end
 function std.t(s)
@@ -83,16 +83,16 @@ end
 end ]]
 
 function std.html()
-	std.header("Content-Type","text/html")
+	std.header("Content-Type","text/html; charset=utf-8")
 	std.header_flush()
 end
 function std.text()
-	std.header("Content-Type","text/plain")
+	std.header("Content-Type","text/plain; charset=utf-8")
 	std.header_flush()
 end
 
 function std.json()
-	std.header("Content-Type","application/json")
+	std.header("Content-Type","application/json; charset=utf-8")
 	std.header_flush()
 end
 function std.jpeg()
