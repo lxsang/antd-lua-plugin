@@ -49,20 +49,31 @@ function utils.decodeURI(url)
 end
 
 function utils.unescape(s)
-	local replacements = {
-		["\\\\"] 	= "\\" ,
-		['\\"'] 	= '"' 	, 
-		["\\n"] 	= "\n"	, 
-		["\\t"] 	= "\t"	, 
-		["\\b"] 	= "\b"	, 
-		["\\f"] 	= "\f"	,
-		["\\r"] 	= "\r"
-	}
-	local out = s
-	for k,v in pairs(replacements) do
-		out = out:gsub(k,v)
+	local str = ""
+	local escape = false
+	local esc_map = {b = '\b', f = '\f', n = '\n', r = '\r', t = '\t'}
+	for c in s:gmatch"." do
+		if c ~= '\\' then
+			if escape then
+				if esc_map[c] then
+					str = str..esc_map[c]
+				else
+					str = str..c
+				end
+			else
+				str = str..c
+			end
+			escape = false
+		else
+			if escape then
+				str = str..c
+				escape = false
+			else
+				escape = true
+			end
+		end
 	end
-	return out
+	return str
 end
 
 function utils.file_exists(name)

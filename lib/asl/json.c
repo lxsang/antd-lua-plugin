@@ -113,14 +113,14 @@ static int process_token_string(lua_State* L, jsmntok_t* t, const char* s, int c
 	//const char* replace_token[8] = {"\\","\"","\n","\t","\b","\f","\r","/"};
 	char * str = strndup(s+t[cid].start, t[cid].end-t[cid].start);
 	// un escape the string
-	lua_getglobal(L, "utils");
+	/*lua_getglobal(L, "utils");
 	lua_getfield(L, -1, "unescape");
 	lua_pushstring(L,str);
 	if (lua_pcall(L, 1, 1, 0) != 0)
 	        printf("Error running function `unescape': %s\n",lua_tostring(L, -1));
 	if(str) free(str);
 	str = (char*)luaL_checkstring(L,-1);
-	lua_settop(L, -3);
+	lua_settop(L, -3);*/
 	lua_pushstring(L,str);
 	//stackDump(L);
 	//lua_pushstring(L, str);
