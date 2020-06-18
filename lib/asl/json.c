@@ -108,10 +108,63 @@ static void stackDump (lua_State *L) {
 */
 static int process_token_string(lua_State* L, jsmntok_t* t, const char* s, int cid)
 {
-	// unescape a string
-	//const char* search_token[8] = {"\\\\","\\\"","\\n","\\t","\\b","\\f","\\r","\\/"};
-	//const char* replace_token[8] = {"\\","\"","\n","\t","\b","\f","\r","/"};
-	char * str = strndup(s+t[cid].start, t[cid].end-t[cid].start);
+	// un escape the string
+	char * str = (char*) malloc(t[cid].end-t[cid].start + 1);
+	int index = 0;
+	char c;
+	uint8_t escape = 0;
+
+	for (int i = t[cid].start; i < t[cid].end; i++)
+	{
+		c = *(s+i);
+		if(c == '\\')
+		{
+			if(escape)
+			{
+				str[index] = c;
+				escape = 0;
+				index++;
+			}
+			else 
+			{
+				escape = 1;
+			}
+		}
+		else
+		{
+			if(escape)
+			{
+				switch (c)
+				{
+				case 'b':
+					str[index] = '\b';
+					break;
+				case 'f':
+					str[index] = '\f';
+					break;
+				case 'n':
+					str[index] = '\n';
+					break;
+				case 'r':
+					str[index] = '\r';
+					break;
+				case 't':
+					str[index] = '\t';
+					break;
+				default:
+					str[index] = c;
+				}
+			}
+			else
+			{
+				str[index] = c;
+			}
+			index++;
+			escape = 0;
+		}
+	}
+	str[index] = '\0';
+	//strndup(s+t[cid].start, t[cid].end-t[cid].start);
 	// un escape the string
 	/*lua_getglobal(L, "utils");
 	lua_getfield(L, -1, "unescape");
@@ -125,6 +178,7 @@ static int process_token_string(lua_State* L, jsmntok_t* t, const char* s, int c
 	//stackDump(L);
 	//lua_pushstring(L, str);
 	//printf("%s\n",strndup(s+t[cid].start, t[cid].end-t[cid].start) );
+	if(str) free(str);
 	return cid+1;
 }
 static int process_token_primitive(lua_State* L, jsmntok_t* t, const char* s, int cid)
