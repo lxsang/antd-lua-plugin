@@ -23,7 +23,7 @@
 #define MAX_FN_ARGC 32
 
 // define atomic type
-typedef enum ffi_atomic_t {
+typedef enum {
 	L_FFI_TYPE_VOID,
 	L_FFI_TYPE_UINT8,
 	L_FFI_TYPE_SINT8,
@@ -45,7 +45,7 @@ typedef enum ffi_atomic_t {
 	L_FFI_TYPE_SLONG,
 	L_FFI_TYPE_LONGDOUBLE,
 	L_FFI_TYPE_POINTER
-};
+} ffi_atomic_t;
 
 static const ffi_type* ffi_atomic_type_ptrs[] = 
 {
@@ -400,7 +400,7 @@ static int l_ffi_atomic_type(lua_State* L)
 		lua_pushnil(L);
 		return 1;
 	}
-	type = ffi_atomic_type_ptrs[etype];
+	type = (ffi_type*)ffi_atomic_type_ptrs[etype];
 	lua_pushlightuserdata(L,type);
 	return 1;
 }

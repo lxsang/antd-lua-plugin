@@ -1,4 +1,5 @@
 #include <antd/ws.h>
+#include <antd/base64.h>
 #include "../lualib.h"
 // add a length field, and
 void lua_new_byte_array(lua_State*L, int n)

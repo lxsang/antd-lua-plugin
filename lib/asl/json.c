@@ -29,7 +29,7 @@ static int l_json_decode_f (lua_State *L) {
 	  buffer = malloc (length+1);
 	  if (buffer)
 	  {
-	    fread (buffer, 1, length, f);
+	    UNUSED(fread(buffer, 1, length, f));
 	  }
 	  fclose (f);
 	}

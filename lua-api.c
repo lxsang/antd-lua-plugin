@@ -1,7 +1,9 @@
 #define PLUGIN_IMPLEMENT 1
 #include <dlfcn.h>
 #include <antd/plugin.h>
-
+#include <antd/scheduler.h>
+#include <antd/dbhelper.h>
+#include <sys/stat.h>
 #include "lib/lualib.h"
 
 static void* core_handle = NULL;
