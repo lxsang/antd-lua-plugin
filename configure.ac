@@ -128,6 +128,7 @@ AC_CONFIG_FILES([
     lib/Makefile
     lib/core/Makefile
     lib/asl/Makefile
+    lib/md/Makefile
 ])
 
 if test x"${has_cmake}" == x"yes" ; then
