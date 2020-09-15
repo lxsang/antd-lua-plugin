@@ -61,6 +61,8 @@ int md_html(const MD_CHAR* input, MD_SIZE input_size,
             void* userdata, unsigned parser_flags, unsigned renderer_flags);
 
 
+void reset_hd_cnt();
+
 #ifdef __cplusplus
     }  /* extern "C" { */
 #endif

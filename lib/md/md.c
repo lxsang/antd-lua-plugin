@@ -24,6 +24,7 @@ static int l_md_to_html(lua_State *L)
     }
     // duplicate top of the stack
     lua_pushvalue(L, -1);
+    reset_hd_cnt();
     if (md_html(input,
                 strlen(input),
                 md_process_output,
