@@ -245,6 +245,7 @@ static int l_json_parser(lua_State *L, const char* s)
 	int r = jsmn_parse(&p, s, strlen(s), t, sizeof(t)/sizeof(t[0]));
 	if (r < 0) {
 		LOG("Failed to parse JSON: %d\n", r);
+		lua_pushnil(L);
 		return 0;
 	}
 	token_to_object(L,t,s,0);
