@@ -1,7 +1,7 @@
 #include "../lualib.h"
 #include "3rd/jsmn/jsmn.h"
 
-#define MAXTOKEN 1024
+#define MAXTOKEN 8192
 
 // define unescape sequence
 
