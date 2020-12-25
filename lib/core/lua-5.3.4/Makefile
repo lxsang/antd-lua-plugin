@@ -11,7 +11,8 @@ CFLAGS= -O2 -g -Wall -Wextra -DLUA_COMPAT_5_2 -fPIC $(SYSCFLAGS) $(MYCFLAGS)
 LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
 LIBS= -lm $(SYSLIBS) $(MYLIBS)
 
-AR?= ar rcu
+AR?= ar
+LAR= $(AR) rcu
 RANLIB?= ranlib
 RM= rm -f
 
@@ -56,7 +57,7 @@ o:	$(ALL_O)
 a:	$(ALL_A)
 
 $(LUA_A): $(BASE_O)
-	$(AR) $@ $(BASE_O)
+	$(LAR) $@ $(BASE_O)
 	$(RANLIB) $@
 
 $(LUA_SO): $(BASE_O)
@@ -84,7 +85,7 @@ echo:
 	@echo "CFLAGS= $(CFLAGS)"
 	@echo "LDFLAGS= $(SYSLDFLAGS)"
 	@echo "LIBS= $(LIBS)"
-	@echo "AR= $(AR)"
+	@echo "AR= $(LAR)"
 	@echo "RANLIB= $(RANLIB)"
 	@echo "RM= $(RM)"
 
