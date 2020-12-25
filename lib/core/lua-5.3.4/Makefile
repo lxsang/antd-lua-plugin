@@ -11,8 +11,8 @@ CFLAGS= -O2 -g -Wall -Wextra -DLUA_COMPAT_5_2 -fPIC $(SYSCFLAGS) $(MYCFLAGS)
 LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
 LIBS= -lm $(SYSLIBS) $(MYLIBS)
 
-AR= ar rcu
-RANLIB= ranlib
+AR?= ar rcu
+RANLIB?= ranlib
 RM= rm -f
 
 SYSCFLAGS=
