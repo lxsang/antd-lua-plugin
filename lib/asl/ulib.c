@@ -145,7 +145,7 @@ static int l_setuid(lua_State* L)
 	uid_t uid = (uid_t) luaL_checknumber(L,1);
 	if((int)uid != -1)
 	{
-		if(seteuid(uid) < 0)
+		if(setuid(uid) < 0)
 		{
 			printf("UID set problem: %s\n", strerror(errno));
 			lua_pushboolean(L,0);
@@ -165,7 +165,7 @@ static int l_setgid(lua_State* L)
 	uid_t gid = (uid_t) luaL_checknumber(L,1);
 	if((int)gid != -1)
 	{
-		if(setegid(gid) < 0)
+		if(setgid(gid) < 0)
 		{
 			printf("GID set problem: %s\n", strerror(errno));
 			lua_pushboolean(L,0);
