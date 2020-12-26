@@ -6,13 +6,14 @@
 # Your platform. See PLATS for possible values.
 PLAT= none
 
-CC= gcc -std=gnu99
+CC?= gcc -std=gnu99
 CFLAGS= -O2 -g -Wall -Wextra -DLUA_COMPAT_5_2 -fPIC $(SYSCFLAGS) $(MYCFLAGS)
 LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
 LIBS= -lm $(SYSLIBS) $(MYLIBS)
 
-AR= ar rcu
-RANLIB= ranlib
+AR?= ar
+LAR= $(AR) rcu
+RANLIB?= ranlib
 RM= rm -f
 
 SYSCFLAGS=
@@ -56,11 +57,11 @@ o:	$(ALL_O)
 a:	$(ALL_A)
 
 $(LUA_A): $(BASE_O)
-	$(AR) $@ $(BASE_O)
+	$(LAR) $@ $(BASE_O)
 	$(RANLIB) $@
 
 $(LUA_SO): $(BASE_O)
-	gcc -shared $(BASE_O) -o $@ -ldl -lm
+	$(CC) -shared $(BASE_O) -o $@ -ldl -lm
 
 $(LUA_T): $(LUA_O) $(LUA_A)
 	$(CC) -o $@ $(LDFLAGS) $(LUA_O) $(LUA_A) $(LIBS)
@@ -84,7 +85,7 @@ echo:
 	@echo "CFLAGS= $(CFLAGS)"
 	@echo "LDFLAGS= $(SYSLDFLAGS)"
 	@echo "LIBS= $(LIBS)"
-	@echo "AR= $(AR)"
+	@echo "AR= $(LAR)"
 	@echo "RANLIB= $(RANLIB)"
 	@echo "RM= $(RM)"
 
