@@ -293,7 +293,7 @@ static int l_unknow (lua_State *L) {
 static int l_log(lua_State *L)
 {
 	const char* s = luaL_checkstring(L,1);
-	server_log("%s",s);
+	syslog (LOG_NOTICE, "%s", s);
 	return 0;
 }
 
