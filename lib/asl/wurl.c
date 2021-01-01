@@ -14,11 +14,11 @@
 #include <ifaddrs.h>
 #include <sys/stat.h>
 #include <libgen.h>
-#include <time.h>
 
 #include "../lualib.h"
 //#include "../../lua-api.h"
 #include <antd/utils.h>
+#include <sys/time.h>
 	
 #define CLIENT_NAME "wurl"
 #define CLIENT_HOST "192.168.9.249"
