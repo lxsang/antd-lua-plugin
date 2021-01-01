@@ -2,6 +2,10 @@ lib_LTLIBRARIES = ulib.la
 ulib_la_LDFLAGS = -module -avoid-version -shared
 ulib_la_SOURCES =  3rd/zip/zip.c ulib.c
 
+lib_LTLIBRARIES += handle.la
+handle_la_LDFLAGS = -module -avoid-version -shared
+handle_la_SOURCES =  handle.c
+
 lib_LTLIBRARIES += antd.la
 antd_la_LDFLAGS = -module -avoid-version -shared
 antd_la_SOURCES =  antd.c
