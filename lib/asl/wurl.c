@@ -14,6 +14,7 @@
 #include <ifaddrs.h>
 #include <sys/stat.h>
 #include <libgen.h>
+#include <time.h>
 
 #include "../lualib.h"
 //#include "../../lua-api.h"
