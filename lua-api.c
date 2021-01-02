@@ -40,6 +40,7 @@ void init()
 		handle_fn = NULL;
 		return;
 	}
+	LOG("Lua module initialized");
 }
 
 void* handle(void* data)
