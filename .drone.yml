@@ -1,0 +1,19 @@
+---
+kind: pipeline
+type: exec
+name: default
+platform:
+  os: linux
+  arch: arm64
+steps:
+- name: build
+  commands:
+  - libtoolize
+  - aclocal
+  - autoconf
+  - automake --add-missing
+  - ./configure --prefix=/opt/www
+  - make
+trigger:
+  branch:
+  - master
