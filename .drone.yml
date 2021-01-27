@@ -5,13 +5,14 @@ name: default
 platform:
   os: linux
   arch: arm64
+clone:
+  disable: true
 steps:
 - name: clone
   commands:
   - pwd
   - git clone git@iohub.dev:lxsang/antd-lua-plugin.git
   - cd ./antd-lua-plugin && git checkout master
-steps:
 - name: build
   commands:
   - cd ./antd-lua-plugin
