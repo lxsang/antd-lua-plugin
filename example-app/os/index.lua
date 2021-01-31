@@ -1,1 +1,0 @@
-result({r = "Welcome to antOS" })
