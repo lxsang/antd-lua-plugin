@@ -35,6 +35,21 @@ typedef struct{
 	unsigned char* data ;
 } wurl_header_t;
 
+byte_array_t *l_check_barray (lua_State *L,int idx) {
+	void *ud = luaL_checkudata(L, idx, BYTEARRAY);
+	luaL_argcheck(L, ud != NULL, idx, "`byte array' expected");
+	return (byte_array_t *)ud;
+}
+
+void lua_new_byte_array(lua_State*L, int n)
+{
+	 size_t nbytes = sizeof(byte_array_t) + (n-1)*sizeof(unsigned char);
+	 byte_array_t *a = (byte_array_t *)lua_newuserdata(L, nbytes);
+ 	luaL_getmetatable(L, BYTEARRAY);
+ 	lua_setmetatable(L, -2);
+	 a->size = n;
+}
+
 /*get the ip by hostname*/
 int wurl_ip_from_hostname(const char * hostname , char* ip)
 {
