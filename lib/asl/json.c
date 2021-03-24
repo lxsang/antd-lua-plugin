@@ -231,6 +231,7 @@ static int token_to_object(lua_State *L, jsmntok_t* t, const char* s, int cid)
 			break;
 		
 		default:
+			lua_pushnil(L);
 			return cid + t[cid].size; break;
 		
 	}
