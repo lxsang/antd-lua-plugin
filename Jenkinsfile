@@ -40,6 +40,7 @@ pipeline{
       agent {
           docker {
               image 'xsangle/ci-tools:latest-amd64'
+              args '-v /var/jenkins_home/workspace/ant-http:/var/jenkins_home/workspace/ant-http'
               // Run the container on the node specified at the
               // top-level of the Pipeline, in the same workspace,
               // rather than on a new node entirely:
@@ -58,6 +59,7 @@ pipeline{
       agent {
           docker {
               image 'xsangle/ci-tools:latest-arm64'
+              args '-v /var/jenkins_home/workspace/ant-http:/var/jenkins_home/workspace/ant-http'
               // Run the container on the node specified at the
               // top-level of the Pipeline, in the same workspace,
               // rather than on a new node entirely:
@@ -76,6 +78,7 @@ pipeline{
       agent {
           docker {
               image 'xsangle/ci-tools:latest-arm'
+              args '-v /var/jenkins_home/workspace/ant-http:/var/jenkins_home/workspace/ant-http'
               // Run the container on the node specified at the
               // top-level of the Pipeline, in the same workspace,
               // rather than on a new node entirely:
