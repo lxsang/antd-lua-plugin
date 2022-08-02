@@ -33,17 +33,20 @@ pipeline{
             set -e
             export WORKSPACE=$(realpath "./jenkins/workspace/antd-lua-plugin")
             cd $WORKSPACE
+            [ -d build ] && rm build
+            mkdir build
             libtoolize
             aclocal
             autoconf
             automake --add-missing
             ./configure --prefix=/opt/www
             make
+            DESTDIR=$WORKSPACE/build make install
           '''
-        //script {
+        script {
             // only useful for any master branch
             //if (env.BRANCH_NAME =~ /^master/) {
-            //archiveArtifacts artifacts: 'd.ts/, release/antos-1.1.2.tar.gz', fingerprint: true
+            archiveArtifacts artifacts: 'build/', fingerprint: true
             //}
         //}
       }
