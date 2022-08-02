@@ -1,4 +1,4 @@
-def build_antd()
+def build_plugin()
 {
   sh '''
   set -e
