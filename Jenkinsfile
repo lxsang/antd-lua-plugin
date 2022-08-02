@@ -48,7 +48,7 @@ pipeline{
             //if (env.BRANCH_NAME =~ /^master/) {
             archiveArtifacts artifacts: 'build/', fingerprint: true
             //}
-        //}
+        }
       }
     }
   }
