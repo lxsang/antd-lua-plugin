@@ -28,7 +28,7 @@ pipeline{
     // Enable timestamps in build log console
     timestamps()
     // Maximum time to run the whole pipeline before canceling it
-    timeout(time: 1, unit: 'HOURS')
+    timeout(time: 3, unit: 'HOURS')
     // Use Jenkins ANSI Color Plugin for log console
     ansiColor('xterm')
     // Limit build concurrency to 1 per branch
