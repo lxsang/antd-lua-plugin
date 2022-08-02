@@ -40,12 +40,12 @@ pipeline{
             ./configure --prefix=/opt/www
             make
           '''
-        script {
+        //script {
             // only useful for any master branch
             //if (env.BRANCH_NAME =~ /^master/) {
             //archiveArtifacts artifacts: 'd.ts/, release/antos-1.1.2.tar.gz', fingerprint: true
             //}
-        }
+        //}
       }
     }
   }
