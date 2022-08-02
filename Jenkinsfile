@@ -9,7 +9,7 @@ def build_plugin()
   aclocal
   autoconf
   automake --add-missing
-  ./configure CPPFLAGS=-I$WORKSPACE/../ant-http/build/$arch/usr/include LDFLAGS=-L$WORKSPACE/../ant-http/build/$arch/usr/lib --prefix=/opt/www
+  ./configure CFLAGS=-I$WORKSPACE/../ant-http/build/$arch/usr/include LDFLAGS=-L$WORKSPACE/../ant-http/build/$arch/usr/lib --prefix=/opt/www
   CFLAGS="-I$WORKSPACE/../ant-http/build/$arch/usr/include" LDFLAGS="-L$WORKSPACE/../ant-http/build/$arch/usr/lib" make
   DESTDIR=$WORKSPACE/build/$arch make install
   '''
