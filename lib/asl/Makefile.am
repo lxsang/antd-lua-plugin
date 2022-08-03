@@ -37,6 +37,6 @@ endif
 
 
 
-libdir=$(prefix)/lib/lua/
+libdir=$(DESTDIR)/$(prefix)/lib/lua/
 
 EXTRA_DIST = 3rd/zip/miniz.c 3rd/zip/zip.h 3rd/jsmn/jsmn.h
