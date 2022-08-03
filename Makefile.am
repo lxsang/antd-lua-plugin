@@ -24,6 +24,6 @@ SUBDIRS = . lib
 EXTRA_DIST = README.md APIs
 
 install-data-local:
-	-mkdir -p $(prefix)/lib/lua
-	-cp -v APIs/* $(prefix)/lib/lua
-	-cp -v lib/core/lua-5.3.4/core.so $(prefix)/lib/lua
+	-mkdir -p $(DESTDIR)/$(prefix)/lib/lua
+	-cp -v APIs/* $(DESTDIR)/$(prefix)/lib/lua
+	-cp -v lib/core/lua-5.3.4/core.so $(DESTDIR)/$(prefix)/lib/lua
