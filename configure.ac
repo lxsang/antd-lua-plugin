@@ -131,9 +131,9 @@ AC_CONFIG_FILES([
     lib/md/Makefile
 ])
 
-if test x"${has_cmake}" == x"yes" ; then
-    AC_CONFIG_FILES([lib/ann/Makefile lib/ann/fann/Makefile])
-fi
+#if test x"${has_cmake}" == x"yes" ; then
+#    AC_CONFIG_FILES([lib/ann/Makefile lib/ann/fann/Makefile])
+#fi
 
 # AC_SUBST([my_CPPFLAGS]) pass my_CPPFLAGS to the makefile.am
 # output the script:
