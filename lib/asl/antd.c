@@ -4,17 +4,37 @@
 // add a length field, and
 void lua_new_byte_array(lua_State*L, int n)
 {
-	 size_t nbytes = sizeof(byte_array_t) + (n-1)*sizeof(unsigned char);
-	 byte_array_t *a = (byte_array_t *)lua_newuserdata(L, nbytes);
+	size_t nbytes = sizeof(byte_array_t) + n*sizeof(unsigned char);
+	byte_array_t *a = (byte_array_t *)lua_newuserdata(L, nbytes);
+	a->data = &((char*)a)[sizeof(byte_array_t)];
  	luaL_getmetatable(L, BYTEARRAY);
  	lua_setmetatable(L, -2);
 	 a->size = n;
 }
+
+void lua_new_light_byte_array(lua_State*L, int n, char* ptr)
+{
+	size_t nbytes = sizeof(byte_array_t);
+	byte_array_t *a = (byte_array_t *)lua_newuserdata(L, nbytes);
+	a->size = n;
+	a->data = ptr;
+ 	luaL_getmetatable(L, BYTEARRAY);
+ 	lua_setmetatable(L, -2);
+}
+
 static int l_new_barray (lua_State *L) {
 	 int n = luaL_checknumber(L, 1);
 	 lua_new_byte_array(L,n);
 	 return 1;  /* new userdatum is already on the stack */
 }
+
+static int l_new_lightbarray (lua_State *L) {
+	unsigned char * ptr = lua_touserdata(L,1);
+	 int n = luaL_checknumber(L, 2);
+	 lua_new_light_byte_array(L,n, ptr);
+	 return 1;  /* new userdatum is already on the stack */
+}
+
 byte_array_t *l_check_barray (lua_State *L,int idx) {
 	void *ud = luaL_checkudata(L, idx, BYTEARRAY);
 	luaL_argcheck(L, ud != NULL, idx, "`byte array' expected");
@@ -78,6 +98,7 @@ static int l_barray_write(lua_State* L)
 }
 
 static const struct luaL_Reg barraylib[] = {
+	{"unew", l_new_lightbarray},
 	{"new", l_new_barray},
 	{"set", l_set_barray},
 	{"get", l_get_barray},

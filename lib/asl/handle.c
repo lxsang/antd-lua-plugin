@@ -23,7 +23,14 @@ static void push_dict_to_lua(lua_State* L, dictionary_t d)
 				push_dict_to_lua(L, (dictionary_t)as->value);
 			else
 			{
-				lua_pushstring(L,as->value);
+				if(strncmp(as->key,"octet-stream",12) == 0)
+				{
+					lua_pushlightuserdata(L, as->value);
+				}
+				else
+				{
+					lua_pushstring(L,as->value);
+				}
 				//printf("VALUE : %s\n",as->value );
 			}
 			lua_settable(L, -3);
@@ -76,6 +83,7 @@ void* lua_handle(void* data, void* meta)
 	lua_pushlightuserdata(L, rq->client);
 	//lua_pushnumber(L,client);
 	lua_settable(L, -3);
+
 	lua_pushstring(L,"request");
 	push_dict_to_lua(L,rq->request);
 	lua_settable(L, -3);

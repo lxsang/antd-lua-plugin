@@ -20,7 +20,7 @@
 // add byte array support
  typedef struct{
 	 int size;
-	 unsigned char data[1];
+	 unsigned char * data;
  } byte_array_t;
  
 typedef struct{
