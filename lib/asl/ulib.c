@@ -622,6 +622,80 @@ static int l_zip(lua_State* L)
 	lua_pushboolean(L,0);
 	return 1;
 }
+static int l_getenv(lua_State* L)
+{
+	const char* name = luaL_checkstring(L,1);
+	if(!name)
+	{
+		lua_pushnil(L);
+		return 1;
+	}
+	char * value = getenv(name);
+	lua_pushstring(L, value);
+	return 1;
+}
+
+static int l_setenv(lua_State* L)
+{
+	const char* name = luaL_checkstring(L,1);
+	const char* value = luaL_checkstring(L,2);
+	const int force = luaL_checknumber(L,3);
+	if(!name)
+	{
+		lua_pushboolean(L, 0);
+		return 1;
+	}
+	if(!value)
+	{
+		lua_pushboolean(L, 0);
+		return 1;
+	}
+	int ret = setenv(name, value, force);
+	if(ret != 0)
+	{
+		lua_pushboolean(L, 0);
+		return 1;
+	}
+	lua_pushboolean(L,1);
+	return 1;
+}
+
+static int l_unsetenv(lua_State* L)
+{
+	const char* name = luaL_checkstring(L,1);
+	if(!name)
+	{
+		lua_pushboolean(L, 0);
+		return 1;
+	}
+	int ret = unsetenv(name);
+	if(ret != 0)
+	{
+		lua_pushboolean(L, 0);
+		return 1;
+	}
+	lua_pushboolean(L,1);
+	return 1;
+}
+
+static int l_gethomedir(lua_State* L)
+{
+	uid_t uid = (uid_t) luaL_checknumber(L,1);
+	if(uid < 0)
+	{
+		lua_pushnil(L);
+		return 1;
+	}
+	struct passwd *pw = getpwuid(uid);
+
+	if (pw == NULL) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	lua_pushstring(L, pw->pw_dir);
+	return 1;
+}
 
 static const struct luaL_Reg _lib [] = {
 	{"auth", l_check_login},
@@ -643,6 +717,10 @@ static const struct luaL_Reg _lib [] = {
 	{"move",l_file_move},
 	{"unzip",l_unzip},
 	{"zip",l_zip},
+	{"getenv",l_getenv},
+	{"setenv",l_setenv},
+	{"unsetenv",l_unsetenv},
+	{"home_dir",l_gethomedir},
 	{NULL,NULL}
 };
 
