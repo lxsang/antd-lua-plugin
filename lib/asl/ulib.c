@@ -3,6 +3,8 @@
  #include <limits.h>
  #include <pwd.h>
  #include <shadow.h>
+ #include <fcntl.h>
+ #include <sys/sendfile.h>
 #endif
 #include <stdint.h>
 #include <stdio.h>
@@ -370,6 +372,51 @@ static int l_file_move(lua_State* L)
 	return 1;
 }
 
+static int l_send_file(lua_State* L)
+{
+	const char* old = luaL_checkstring(L,1);
+	const char* new = luaL_checkstring(L,2);
+	int fromfd, tofd, ret;
+	off_t off = 0;
+	if (unlink(new) < 0 && errno != ENOENT) {
+		lua_pushboolean(L,0);
+		goto end_send_file;
+	}
+	if ((fromfd = open(old, O_RDONLY)) < 0 ||
+	    (tofd = open(new, O_WRONLY | O_CREAT, 0600)) < 0) {
+		lua_pushboolean(L,0);
+		goto end_send_file;
+	}
+	struct stat st;
+	if(stat(old, &st)!=0)
+	{
+		lua_pushboolean(L,0);
+		goto end_send_file;
+	}
+	size_t sz = st.st_size;
+	int read = 0;
+	while (read != sz && (ret = sendfile(tofd, fromfd, &off, sz - read)) == 0)
+	{
+		read += ret;
+	}
+	if(ret != sz)
+	{
+		lua_pushboolean(L,0);
+		goto end_send_file;
+	}
+	lua_pushboolean(L,1);
+end_send_file:
+	if(fromfd >= 0)
+	{
+		(void) close(fromfd);
+	}
+	if(tofd >= 0)
+	{
+		(void) close(tofd);
+	}
+	return 1;
+}
+
 static int l_read_dir(lua_State* L)
 {
 	const char* path = luaL_checkstring(L,1);
@@ -721,6 +768,7 @@ static const struct luaL_Reg _lib [] = {
 	{"setenv",l_setenv},
 	{"unsetenv",l_unsetenv},
 	{"home_dir",l_gethomedir},
+	{"send_file", l_send_file},
 	{NULL,NULL}
 };
 
