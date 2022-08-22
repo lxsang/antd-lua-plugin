@@ -182,6 +182,13 @@ static int l_setgid(lua_State* L)
 		lua_pushboolean(L,0);
 	return 1;
 }
+static int l_syslog(lua_State* L)
+{
+	const int prio = luaL_checknumber(L,1);
+	const char* msg =  luaL_checkstring(L,2);
+	syslog(prio, "%s", msg);
+	return 1;
+}
 static int l_getuid(lua_State* L)
 {
 	const char* name = luaL_checkstring(L,1);
@@ -769,6 +776,7 @@ static const struct luaL_Reg _lib [] = {
 	{"unsetenv",l_unsetenv},
 	{"home_dir",l_gethomedir},
 	{"send_file", l_send_file},
+	{"syslog", l_syslog},
 	{NULL,NULL}
 };
 

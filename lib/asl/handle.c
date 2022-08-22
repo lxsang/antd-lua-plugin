@@ -102,6 +102,7 @@ void* lua_handle(void* data, void* meta)
 		__t(client, "Cannot run router: %s", lua_tostring(L, -1));
 	}
 	free(index);*/
+	LOG("LUA handle exit on %d", rq->client->sock);
 	// clear request
 	if(L)
 		lua_close(L);
