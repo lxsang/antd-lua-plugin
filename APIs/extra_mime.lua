@@ -1,5 +1,5 @@
 function std.extra_mime(name)
-	local ext = std.ext(name);
+	local ext = std.ext(name)
 	local mpath = __ROOT__.."/".."mimes.json"
 	local xmimes = {}
 	if utils.file_exists(mpath) then
@@ -15,7 +15,7 @@ function std.extra_mime(name)
 	elseif ext == "cpp" or ext == "hpp" then return "text/cpp",false
 	elseif ext == "md" then return "text/markdown",false
 	elseif ext == "lua" then return "text/lua",false
-	elseif ext == "yaml" then return "application/x-yaml", false
+	elseif ext == "yml" then return "application/x-yaml", false
 	elseif xmimes[ext] then return xmimes[ext].mime, xmimes[ext].binary
 	--elseif ext == "pgm" then return "image/x-portable-graymap", true
 	else 
