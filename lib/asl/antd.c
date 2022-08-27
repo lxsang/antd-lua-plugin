@@ -255,6 +255,32 @@ static int l_t (lua_State *L) {
 	return 1;  /* number of results */
 }
 
+
+static int l_antd_recv (lua_State *L) {
+	void* client = lua_touserdata (L, 1);
+	int len = luaL_checknumber(L,2);
+	if(len == 0)
+	{
+		lua_pushnil(L);
+		return 1;
+	}
+	if(len == 1)
+	{
+		char c = 0;
+		len = antd_recv(client, &c, len);
+		lua_pushnumber(L, c);
+		return 1;
+	}
+	else
+	{
+		lua_new_byte_array(L,len);
+		byte_array_t * arr = l_check_barray(L,-1);
+		len = antd_recv(client, arr->data, len);
+		lua_pushnumber(L,len);
+		return 2;  /* number of results */
+	}
+}
+
 // TODO: add __b to LUA
 //int __b(int, const unsigned char*, int);
 static int l_b (lua_State *L) {
@@ -697,6 +723,7 @@ static const struct luaL_Reg standard [] = {
 	   //{"_text", l_text},
 	   //{"_json", l_json},
 	   //{"_jpeg", l_jpeg},
+	   {"antd_recv", l_antd_recv},
 	   {"_error", l_std_error},
 	   {"_send_header", l_send_header},
 	   {"b64encode", l_base64_encode},

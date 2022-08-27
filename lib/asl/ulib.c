@@ -381,43 +381,79 @@ static int l_file_move(lua_State* L)
 
 static int l_send_file(lua_State* L)
 {
-	const char* old = luaL_checkstring(L,1);
-	const char* new = luaL_checkstring(L,2);
 	int fromfd, tofd, ret;
+	size_t sz = 0;
+	char* old = NULL;
+	char* new = NULL;
+	if(lua_isnumber(L,1))
+	{
+		fromfd = (int)luaL_checknumber(L,1);
+	}
+	else
+	{
+		old = (char*)luaL_checkstring(L,1);
+		if((fromfd = open(old, O_RDONLY)) < 0)
+		{
+			lua_pushboolean(L,0);
+			goto end_send_file;
+		}
+		struct stat st;
+		if(stat(old, &st)!=0)
+		{
+			lua_pushboolean(L,0);
+			goto end_send_file;
+		}
+		sz = st.st_size;
+	}
+	if(lua_isnumber(L,2))
+	{
+		tofd = (int) luaL_checknumber(L,2);
+	}
+	else
+	{
+		new = (char*)luaL_checkstring(L,2);
+		if (unlink(new) < 0 && errno != ENOENT) {
+			lua_pushboolean(L,0);
+			goto end_send_file;
+		}
+		if((tofd = open(new, O_WRONLY | O_CREAT, 0600)) < 0)
+		{
+			lua_pushboolean(L,0);
+			goto end_send_file;
+		}
+	}
+
+	if(lua_isnumber(L,3))
+	{
+		sz = (size_t) luaL_checknumber(L,3);
+	}
+	
 	off_t off = 0;
-	if (unlink(new) < 0 && errno != ENOENT) {
-		lua_pushboolean(L,0);
-		goto end_send_file;
-	}
-	if ((fromfd = open(old, O_RDONLY)) < 0 ||
-	    (tofd = open(new, O_WRONLY | O_CREAT, 0600)) < 0) {
-		lua_pushboolean(L,0);
-		goto end_send_file;
-	}
-	struct stat st;
-	if(stat(old, &st)!=0)
-	{
-		lua_pushboolean(L,0);
-		goto end_send_file;
-	}
-	size_t sz = st.st_size;
 	int read = 0;
-	while (read != sz && (ret = sendfile(tofd, fromfd, &off, sz - read)) == 0)
+	while (
+		sz > 0 &&
+		read != sz &&
+		(
+			((ret = sendfile(tofd, fromfd, &off, sz - read)) >= 0) ||
+			(errno == EAGAIN)
+		)
+	)
 	{
+		if(ret < 0) ret = 0;
 		read += ret;
 	}
-	if(ret != sz)
+	if(read != sz)
 	{
 		lua_pushboolean(L,0);
 		goto end_send_file;
 	}
 	lua_pushboolean(L,1);
 end_send_file:
-	if(fromfd >= 0)
+	if(fromfd >= 0 && old)
 	{
 		(void) close(fromfd);
 	}
-	if(tofd >= 0)
+	if(tofd >= 0 && new)
 	{
 		(void) close(tofd);
 	}
