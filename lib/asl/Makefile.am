@@ -19,10 +19,6 @@ json_la_LDFLAGS = -module -avoid-version -shared
 json_la_SOURCES =  3rd/jsmn/jsmn.c json.c
 
 
-lib_LTLIBRARIES += wurl.la
-wurl_la_LDFLAGS = -module -avoid-version -shared
-wurl_la_SOURCES =  wurl.c
-
 if HAS_FFI
 lib_LTLIBRARIES += ffi.la
 ffi_la_LDFLAGS = -module -avoid-version -shared -lffi

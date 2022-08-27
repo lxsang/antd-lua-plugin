@@ -1,10 +1,70 @@
+
+package.cpath = __api__.apiroot..'/?.so'
+require("antd")
+
+local readline = function()
+    local s = ""
+    repeat
+        local c = modules.std().antd_recv(HTTP_REQUEST.id,1)
+        if c ~= 0 and c ~= 10 then
+            s = s..utf8.char(c)
+        end
+    until(c == 0 or c == 10)
+    return s
+end
+local read_header =function()
+    repeat
+        local l = readline()
+        if l ~= '\r' then
+            if l == "HTTP_REQUEST" or l == "request" or l == "COOKIE" or l == "REQUEST_HEADER" or l == "REQUEST_DATA" then
+                coroutine.yield(l, "LUA_TABLE")
+            else
+                local l1 = readline()
+                if l1 ~= '\r' then
+                    coroutine.yield(l, l1)
+                end
+                l = l1
+            end
+        end
+    until l == '\r'
+end
+
+
+local read_headers = function()
+    local co = coroutine.create(function () read_header() end)
+      return function ()   -- iterator
+        local code, k, v = coroutine.resume(co)
+        return k,v
+      end
+end
+
+local parse_headers =function()
+    local lut = {
+        HTTP_REQUEST = HTTP_REQUEST
+    }
+    local curr_tbl = "HTTP_REQUEST"
+    for k,v in read_headers() do
+        if v == "LUA_TABLE" then
+            if not lut[k] then
+                lut[k] = {}
+            end
+            curr_tbl = k
+        else
+            lut[curr_tbl][k] = v
+        end
+    end
+    HTTP_REQUEST.request = lut.request
+    HTTP_REQUEST.request.COOKIE = lut.COOKIE
+    HTTP_REQUEST.request.REQUEST_HEADER = lut.REQUEST_HEADER
+    HTTP_REQUEST.request.REQUEST_DATA = lut.REQUEST_DATA
+end
+
+-- parsing the header
+parse_headers()
 -- root dir
-__ROOT__ = __api__.root
+__ROOT__ = HTTP_REQUEST.request.SERVER_WWW_ROOT
 -- set require path
 package.path = __ROOT__ .. '/?.lua;'..__api__.apiroot..'/?.lua'
-package.cpath = __api__.apiroot..'/?.so'
-
-require("antd")
 require("std")
 require("utils")
 require("extra_mime")
@@ -22,6 +82,14 @@ HEADER.mobile = false
 
 if HEADER["User-Agent"] and HEADER["User-Agent"]:match("Mobi") then
     HEADER.mobile = true
+end
+
+function LOG_INFO(fmt,...)
+    ulib.syslog(5,string.format(fmt, table.unpack({...})))
+end
+
+function LOG_ERROR(fmt,...)
+    ulib.syslog(3,string.format(fmt, table.unpack({...})))
 end
 
 function has_module(m)
@@ -102,7 +170,6 @@ function loadscript(file, args)
                                 end
                             end
                             pro = pro.."\""..utils.escape(tmp:gsub("%%","%%%%")).."\")\n"
-                            --print(pro)
                         else
                             html = html..std.trim(line," "):gsub("%%","%%%%").."\n"
                         end
@@ -118,10 +185,119 @@ function loadscript(file, args)
             pro = pro.."echo(\""..utils.escape(html).."\")\n"
         end
         pro  = pro.."\nend \n return fn"
-        --print(pro)
         local r,e = load(pro)
         if r then return r(), e else return nil,e end
     end
+end
+
+local decode_post_data = function(ctype, clen, is_url)
+    local raw_data,size = std.antd_recv(HTTP_REQUEST.id, clen)
+    if not raw_data or size ~= clen then
+        LOG_ERROR("Unable to read request data: received %d bytes expected %d bytes", size, clen)
+        return 400, "Unable to read request data"
+    end
+    if is_url then
+        local str = tostring(raw)
+        local arr = explode(str, "&")
+        LOG_INFO("encoded POST URI: %s", str)
+        for i,v in ipairs(arr) do
+            local assoc = explode(v,"=")
+            if #assoc == 2 then
+                REQUEST[assoc[1]] = untils.decodeURI(assoc[2])
+            else
+                REQUEST[assoc[1]] = ""
+            end
+        end
+    else
+        local key = ctype:gsub("^[^/]*", "")
+        REQUEST[key] = raw_data
+    end
+    return 0
+end
+
+local decode_multi_part = function(ctype, clen)
+    --[[
+        local arr = explode(ctype, "=")
+    if #arr ~= 2 then
+        LOG_ERROR("Unable to parsed boundary for: %s", ctype)
+        return 400, "Multipart Boundary not found"
+    end
+    local boundary = std.trim(arr[2]," ")
+    local boundary_end = boundary.."--"
+    LOG_INFO("Boundary found: %s", boundary)
+    local line = nil
+    repeat
+        line = readline()
+    until not line or line:find(boundary) or line == ""
+    if not line or line == "" then
+        LOG_ERROR("Cannot find first match for boundary %s", boundary)
+        return 400, "Unable to decode data based on content boundary"
+    end
+    repeat
+        line = readline()
+    until not line or line:find("Content-Disposition:") or line == ""
+    if not line or line == "" then
+        LOG_ERROR("Content-Disposition meta data not fond")
+        return 400, "Unable to query Content-Disposition from request"
+    end
+    line = line:gsub("Content-Disposition:",""):gsub("\r\n","")
+    -- extract parameters from header
+    arr = explode(line,";")
+    local part_name, part_file = nil, nil
+    for i,v in ipairs(arr) do
+        LOG_INFO('Decoding: %s', v)
+        local assoc = explode(v, "=")
+        local key = std.trim(assoc[1])
+        local val = assoc[1]
+        if val then
+            val = std.trim(val, " ")
+            if key == "name" then
+                LOG_INFO("Part name: %s", val)
+                part_name = val
+            end
+            if key == "filename" then
+                LOG_INFO("Part file: %s", val)
+                part_file = val
+            end
+        end
+    end
+    -- TODO: to be continue
+    ]]
+    return 0
+end
+-- decode post data if any
+local decode_request = function()
+    LOG_INFO("Request method %s", REQUEST.method)
+    if (not REQUEST.method)
+        or (REQUEST.method ~= "POST"
+            and REQUEST.method ~= "PUT"
+            and REQUEST.method ~= "PATCH") then
+            return 0
+    end
+    local ctype = HEADER['Content-Type']
+    local clen = HEADER['Content-Length'] or -1
+    if clen then
+        clen = tonumber(clen)
+    end
+    if not ctype or clen == -1 then
+        LOG_ERROR("Invalid content type %s or content length %d", ctype, clen)
+        return 400, "Bad Request, missing content description"
+    end
+    if ctype == "application/x-www-form-urlencoded" then
+        return decode_post_data(ctype, clen, true)
+    elseif ctype == "multipart/form-data" then
+        return decode_multi_part(ctype, clen)
+    else
+        return decode_post_data(ctype, clen, false)
+    end
+end
+
+local code, error = decode_request()
+
+if code ~= 0 then
+    LOG_ERROR(error)
+    std.error(code, error)
+    return
 end
 
 -- OOP support
