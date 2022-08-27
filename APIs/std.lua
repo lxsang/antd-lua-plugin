@@ -1,4 +1,3 @@
-std = modules.std()
 bytes = modules.bytes()
 array = modules.array()
 
@@ -61,7 +60,8 @@ function std.b(s)
 	std._b(HTTP_REQUEST.id,s)
 end
 function std.f(v)
-	ulib.send_file(v, HTTP_REQUEST.socket)
+	std._f(HTTP_REQUEST.id,v)
+	--ulib.send_file(v, HTTP_REQUEST.socket)
 end
 
 function std.setCookie(v)
