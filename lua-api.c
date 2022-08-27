@@ -227,8 +227,8 @@ static void *process(void *data)
         case 0:
             // time out
             task = antd_create_task(process, (void *)rq, NULL, time(NULL));
-            //antd_task_bind_event(task, rq->client->sock, 0, TASK_EVT_ON_WRITABLE | TASK_EVT_ON_READABLE);
-            //antd_task_bind_event(task, cl->sock, 0, TASK_EVT_ON_WRITABLE | TASK_EVT_ON_READABLE);
+            antd_task_bind_event(task, rq->client->sock, 0, TASK_EVT_ON_WRITABLE | TASK_EVT_ON_READABLE);
+            antd_task_bind_event(task, cl->sock, 0, TASK_EVT_ON_READABLE);
             return task;
         // we have data
         default:
@@ -277,7 +277,7 @@ static void *process(void *data)
             }
             task = antd_create_task(process, (void *)rq, NULL, time(NULL));
             antd_task_bind_event(task, rq->client->sock, 0, TASK_EVT_ON_WRITABLE | TASK_EVT_ON_READABLE);
-            antd_task_bind_event(task, cl->sock, 0, TASK_EVT_ON_WRITABLE | TASK_EVT_ON_READABLE);
+            antd_task_bind_event(task, cl->sock, 0, TASK_EVT_ON_READABLE);
             return task;
     }
 }
