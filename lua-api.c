@@ -12,8 +12,8 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/ioctl.h>
-#include <sys/select.h>
 #include <time.h>
+#include <poll.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <sys/time.h>
@@ -25,7 +25,6 @@
 #define MAX_SOCK_NAME 64
 #define SOCKET_NAME "lua.sock"
 
-#define MAX_SESSION_TIMEOUT (15u * 60u) //15 min
 #define PING_INTERVAL 10u               // 10s
 #define PROCESS_TIMEOUT 200u          //100ms
 
@@ -72,12 +71,14 @@ static int mk_socket()
     if (bind(fd, (struct sockaddr *)(&address), sizeof(address)) == -1)
     {
         ERROR("Unable to bind name: %s to a socket: %s", address.sun_path, strerror(errno));
+        close(fd);
         return -1;
     }
     // mark the socket as passive mode
     if (listen(fd, 500) == -1)
     {
         ERROR("Unable to listen to socket: %d (%s): %s", fd, sock_path, strerror(errno));
+        close(fd);
         return -1;
     }
     LOG("Socket %s is created successfully: %d", sock_path, fd);
@@ -123,25 +124,25 @@ static void lua_serve()
             ERROR("Unable to set reuse address on %d - setsockopt: %s", socket, strerror(errno));
         }
         LOG("LUA server online");
-		/*set log level*/
-		const char * enable_debug = getenv("ANTD_DEBUG");
-		int log_level = LOG_ERR;
-		if(enable_debug)
-		{
-			if(atoi(enable_debug))
-			{
-				LOG("LUA Debug is enabled");
-				log_level = LOG_NOTICE;
-			}
-		}
-		setlogmask(LOG_UPTO(log_level));
+        /*set log level*/
+        const char * enable_debug = getenv("ANTD_DEBUG");
+        int log_level = LOG_ERR;
+        if(enable_debug)
+        {
+            if(atoi(enable_debug))
+            {
+                LOG("LUA Debug is enabled");
+                log_level = LOG_NOTICE;
+            }
+        }
+        setlogmask(LOG_UPTO(log_level));
         while((fd = accept(socket, NULL, NULL)) > 0)
         {
             pthread_t thread;
             lua_thread_data_t* data = (lua_thread_data_t*)malloc(sizeof(lua_thread_data_t));
             data->__plugin__ = &__plugin__;
             data->fd = fd;
-            set_nonblock(fd);
+            //set_nonblock(fd);
             if (pthread_create(&thread, NULL, (void *(*)(void*))handle_fn, (void *)data) != 0)
             {
                 ERROR("pthread_create: cannot create lua thread: %s", strerror(errno));
@@ -168,7 +169,7 @@ static void lua_serve()
 
 void init()
 {
-	 (void)snprintf(sock_path, sizeof(sock_path), "%s/%s", __plugin__.tmpdir, SOCKET_NAME);
+     (void)snprintf(sock_path, sizeof(sock_path), "%s/%s", __plugin__.tmpdir, SOCKET_NAME);
     LOG("Lua socket will be stored in %s", sock_path);
     pid = fork();
     if (pid == 0)
@@ -203,26 +204,24 @@ static void push_dict_to_socket(antd_client_t* cl, char* name, char* parent_name
 
 static void *process(void *data)
 {
-    fd_set fd_in;
     antd_request_t *rq = (antd_request_t *)data;
     antd_client_t* cl = (antd_client_t* ) dvalue(rq->request, "LUA_CL_DATA");
-    struct timeval timeout;
-    timeout.tv_sec = 0;
-    timeout.tv_usec = PROCESS_TIMEOUT;
-    FD_ZERO(&fd_in);
-    FD_SET(rq->client->sock, &fd_in);
-    FD_SET(cl->sock, &fd_in);
-    int max_fdm = rq->client->sock > cl->sock ? rq->client->sock : cl->sock;
-    int rc = select(max_fdm + 1, &fd_in, NULL, NULL, &timeout);
+    struct pollfd pfds[2];
+    pfds[0].fd = rq->client->sock;
+    pfds[0].events = POLLIN;
+    pfds[1].fd = cl->sock;
+    pfds[1].events = POLLIN;
+
+    int rc = poll(pfds, 2, PROCESS_TIMEOUT);
     antd_task_t* task;
     uint8_t buff[BUFFLEN];
     int ret;
     switch (rc)
     {
         case -1:
-            ERROR("Error on select(): %s", strerror(errno));
+            ERROR("Error on poll(): %s", strerror(errno));
             antd_close(cl);
-			dput(rq->request, "LUA_CL_DATA", NULL);
+            dput(rq->request, "LUA_CL_DATA", NULL);
             return antd_create_task(NULL, data, NULL, rq->client->last_io);
         case 0:
             // time out
@@ -233,7 +232,7 @@ static void *process(void *data)
         // we have data
         default:
             // If data is on webserver
-            if (FD_ISSET(rq->client->sock, &fd_in))
+            if (pfds[0].revents & POLLIN)
             {
                 while((ret = antd_recv_upto(rq->client,buff, BUFFLEN)) > 0)
                 {
@@ -242,7 +241,7 @@ static void *process(void *data)
                     {
                         ERROR("Error on atnd_send(): %s", strerror(errno));
                         antd_close(cl);
-						dput(rq->request, "LUA_CL_DATA", NULL);
+                        dput(rq->request, "LUA_CL_DATA", NULL);
                         return antd_create_task(NULL, data, NULL, rq->client->last_io);
                     }
                 }
@@ -250,11 +249,18 @@ static void *process(void *data)
                 {
                     LOG("antd_recv_upto() on %d: %s",rq->client->sock,  strerror(errno));
                     antd_close(cl);
-					dput(rq->request, "LUA_CL_DATA", NULL);
+                    dput(rq->request, "LUA_CL_DATA", NULL);
                     return antd_create_task(NULL, data, NULL, rq->client->last_io);
                 }
             }
-            else if(FD_ISSET(cl->sock, &fd_in))
+            else if(pfds[0].revents &(POLLERR | POLLHUP))
+            {
+                ERROR("POLLERR or POLLHUP received on %d", rq->client->sock);
+                antd_close(cl);
+                dput(rq->request, "LUA_CL_DATA", NULL);
+                return antd_create_task(NULL, data, NULL, rq->client->last_io);
+            }
+            if(pfds[1].revents & POLLIN)
             {
                 while((ret = antd_recv_upto(cl,buff, BUFFLEN)) > 0)
                 {
@@ -263,7 +269,7 @@ static void *process(void *data)
                     {
                         ERROR("Error atnd_send(): %s", strerror(errno));
                         antd_close(cl);
-						dput(rq->request, "LUA_CL_DATA", NULL);
+                        dput(rq->request, "LUA_CL_DATA", NULL);
                         return antd_create_task(NULL, data, NULL, rq->client->last_io);
                     }
                 }
@@ -271,9 +277,16 @@ static void *process(void *data)
                 {
                     LOG("antd_recv_upto() on %d: %s", cl->sock, strerror(errno));
                     antd_close(cl);
-					dput(rq->request, "LUA_CL_DATA", NULL);
+                    dput(rq->request, "LUA_CL_DATA", NULL);
                     return antd_create_task(NULL, data, NULL, rq->client->last_io);
                 }
+            }
+            else if(pfds[1].revents &(POLLERR | POLLHUP))
+            {
+                ERROR("POLLERR or POLLHUP received on %d", cl->sock);
+                antd_close(cl);
+                dput(rq->request, "LUA_CL_DATA", NULL);
+                return antd_create_task(NULL, data, NULL, rq->client->last_io);
             }
             task = antd_create_task(process, (void *)rq, NULL, time(NULL));
             antd_task_bind_event(task, rq->client->sock, 0, TASK_EVT_ON_WRITABLE | TASK_EVT_ON_READABLE);
@@ -304,7 +317,7 @@ void* handle(void* data)
     cl->z_status = 0;
     cl->z_level = ANTD_CNONE;
     cl->zstream = NULL;
-	rq->client->z_level = ANTD_CNONE;
+    rq->client->z_level = ANTD_CNONE;
     push_dict_to_socket(cl, "request","HTTP_REQUEST", rq->request);
     antd_send(cl,"\r\n", 2);
     dput(rq->request, "LUA_CL_DATA", cl);

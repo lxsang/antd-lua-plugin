@@ -37,7 +37,7 @@ static int l_check_login (lua_State *L) {
     if (pwd == NULL)
     {
     	lua_pushboolean(L,0);
-		printf("Cannot find pwd record of %s\n", username );
+		ERROR("Cannot find pwd record of %s", username );
 		return 1;
     }
     spwd = getspnam(username);
@@ -63,25 +63,23 @@ static int l_check_login (lua_State *L) {
     if (encrypted == NULL)
 	{
     	lua_pushboolean(L,0);
-		printf("Cant crypt \n" );
+		ERROR("Cant crypt %s", strerror(errno) );
 		return 1;
 	}
     if(strcmp(encrypted, pwd->pw_passwd) == 0)
 	{
     	lua_pushboolean(L,1);
-		printf("%s\n","Successful login" );
 		return 1;
 	} else
 	{
     	lua_pushboolean(L,0);
-		printf("Password incorrect \n" );
 		return 1;
     }
 #else
 	// macos
 	// just pass the check, for test only
-	lua_pushboolean(L,1);
-	printf("%s\n","Successful login" );
+	lua_pushboolean(L,0);
+	ERROR("Login by shadow passd is not supported on this system");
 	return 1;
 #endif
 }
@@ -117,6 +115,7 @@ static int l_fork(lua_State* L)
 	lua_pushnumber(L, pid);
 	return 1;
 }
+
 static int l_waitpid(lua_State* L)
 {
 	int pid = luaL_checknumber(L,1);
@@ -138,7 +137,7 @@ static int l_kill(lua_State* L)
 {
 	int pid = luaL_checknumber(L,1);
 	if(pid == -1) pid = getpid();
-	int status = kill(pid, SIGKILL);
+	int status = kill(pid, SIGHUP);
 	lua_pushnumber(L, status);
 	return 1;
 }
@@ -149,7 +148,7 @@ static int l_setuid(lua_State* L)
 	{
 		if(setuid(uid) < 0)
 		{
-			printf("UID set problem: %s\n", strerror(errno));
+			ERROR("UID set problem: %s", strerror(errno));
 			lua_pushboolean(L,0);
 		}
 		else
@@ -169,7 +168,7 @@ static int l_setgid(lua_State* L)
 	{
 		if(setgid(gid) < 0)
 		{
-			printf("GID set problem: %s\n", strerror(errno));
+			ERROR("GID set problem: %s", strerror(errno));
 			lua_pushboolean(L,0);
 		}
 		else
@@ -214,12 +213,12 @@ static int l_getuid(lua_State* L)
 		 /* Retrieve group list */
 		groups = malloc(ngroups * sizeof (gid_t));
            if (groups == NULL) {
-               LOG("malloc eror \n");
+               LOG("malloc eror");
                return 1;
            }
 		if (getgrouplist(name, gid, groups, &ngroups) == -1) {
 			free(groups);
-			LOG("getgrouplist() returned -1; ngroups = %d\n", ngroups);
+			LOG("getgrouplist() returned -1; ngroups = %d", ngroups);
 			return 1;
 		}
 		/* retrieved groups, along with group names */

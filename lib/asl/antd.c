@@ -1,5 +1,15 @@
 #include <antd/ws.h>
 #include <antd/base64.h>
+#include <poll.h>
+#include <errno.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <sys/wait.h>
+#include <sys/un.h>
+#include <sys/ioctl.h>
+#include <time.h>
+#include <fcntl.h>
 #include "../lualib.h"
 // add a length field, and
 void lua_new_byte_array(lua_State *L, int n)
@@ -724,6 +734,148 @@ static int l_is_dir(lua_State *L)
     return 1;
 }
 
+static int l_pfork(lua_State* L)
+{
+    antd_client_t* client = (antd_client_t*)lua_touserdata(L,1);
+    int sock = client->sock;
+    // create domain socket
+    struct sockaddr_un address;
+    address.sun_family = AF_UNIX;
+    (void)snprintf(address.sun_path, sizeof(address.sun_path), "/tmp/antd_pfork_%d.sock",sock);
+    unlink(address.sun_path);
+    int pfd = socket(AF_UNIX, SOCK_STREAM, 0);
+    if(pfd == -1)
+    {
+        ERROR( "Unable to create Unix domain socket: %s", strerror(errno));
+        lua_pushnumber(L, -1);
+        return 1;
+    }
+    if (bind(pfd, (struct sockaddr *)(&address), sizeof(address)) == -1)
+    {
+        ERROR("Unable to bind name: %s to a socket: %s", address.sun_path, strerror(errno));
+        lua_pushnumber(L, -1);
+        return 1;
+    }
+    // mark the socket as passive mode
+    if (listen(pfd, 10) == -1)
+    {
+        ERROR("Unable to listen to socket: %d (%s): %s", pfd, address.sun_path, strerror(errno));
+        lua_pushnumber(L, -1);
+        close(pfd);
+        return 1;
+    }
+    LOG( "Socket %s is created successfully", address.sun_path);
+    set_nonblock(pfd);
+
+    int pid = fork();
+    if(pid == 0)
+    {
+        int child = socket(AF_UNIX, SOCK_STREAM, 0);
+        if(child == -1)
+        {
+            ERROR( "Unable to create Unix domain socket: %s", strerror(errno));
+            lua_pushnumber(L, -1);
+            return -1;
+        }
+        if(connect(child, (struct sockaddr*)(&address), sizeof(address)) == -1)
+        {
+            ERROR( "Unable to connect to socket '%s': %s", address.sun_path, strerror(errno));
+            lua_pushnumber(L, -1);
+            close(child);
+            return -1;
+        }
+        client->sock = child;
+        client->z_level = ANTD_CNONE;
+        lua_pushnumber(L, 0);
+    }
+    else
+    {
+        int ret, status;
+        struct pollfd pfds[2];
+        pfds[0].fd = pfd;
+        pfds[0].events = POLLIN;
+        ret = poll(pfds, 1, -1);
+        if(ret < 0 || (pfds[0].revents & (POLLERR | POLLHUP)))
+        {
+            ERROR("Unable to wait for child process");
+            lua_pushnumber(L, -1);
+            close(pfd);
+            return 1;
+        }
+        // now wait for child process
+        int cfd = accept(pfd, NULL, NULL);
+        if(cfd == -1)
+        {
+            ERROR("Unable to connect to child process");
+            lua_pushnumber(L, -1);
+            close(pfd);
+            return 1;
+        }
+        LOG("Child process %d is accessible from %d", pid, cfd);
+        set_nonblock(cfd);
+        uint8_t buff[BUFFLEN];
+        pfds[0].fd = sock;
+        pfds[0].events = POLLIN;
+        pfds[1].fd = cfd;
+        pfds[1].events = POLLIN;
+        memset(buff, 0, sizeof(buff));
+        while((ret = poll(pfds, 2, 200)) !=  -1)
+        {
+            if(waitpid(pid, &status, WNOHANG) != 0)
+            {
+                break;
+            }
+            if(ret == 0)
+            {
+                continue;
+            }
+            if(pfds[0].revents & POLLIN)
+            {
+                ret = read(client->sock,buff, BUFFLEN);
+                if(ret <= 0)
+                {
+                    LOG("antd_recv_upto() on %d: %s",sock,  strerror(errno));
+                    break;
+                }
+                // write data to the other side
+                if(write(cfd,buff, ret) != ret)
+                {
+                    ERROR("Error on send(): %s", strerror(errno));
+                    break;
+                }
+            }
+            else if (pfds[0].revents &(POLLERR | POLLHUP))
+            {
+                break;
+            }
+
+            if(pfds[1].revents & POLLIN)
+            {
+                ret = read(cfd, buff, sizeof(buff));
+                if(ret <= 0)
+                {
+                    ERROR("error read() on %d: %s",cfd,  strerror(errno));
+                    break;
+                }
+                if(antd_send(client,buff, ret) != ret)
+                {
+                    ERROR("Error atnd_send(): %s", strerror(errno));
+                    break;
+                }
+            }
+            else if (pfds[1].revents &(POLLERR | POLLHUP))
+            {
+                break;
+            }
+        }
+        close(cfd);
+    }
+    close(pfd);
+    unlink(address.sun_path);
+    lua_pushnumber(L, pid);
+    return 1;
+}
+
 static int l_std_error(lua_State *L)
 {
     void *client = lua_touserdata(L, 1);
@@ -804,6 +956,7 @@ static const struct luaL_Reg standard[] = {
     {"ws_b", l_ws_bin},
     {"ws_close", l_ws_close},
     {"is_dir", l_is_dir},
+    {"pfork", l_pfork},
     {NULL, NULL}};
 
 int luaopen_std(lua_State *L)
