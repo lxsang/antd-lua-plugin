@@ -1,4 +1,4 @@
-
+math.randomseed(os.clock())
 package.cpath = __api__.apiroot..'/?.so'
 require("antd")
 std = modules.std()

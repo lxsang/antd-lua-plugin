@@ -146,3 +146,16 @@ end
 function firstToUpper(str)
     return (str:gsub("^%l", string.upper))
 end
+
+
+local charset = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890"
+
+function utils.generate_salt(length)
+	local ret = {}
+	local r
+	for i = 1, length do
+		r = math.random(1, #charset)
+		table.insert(ret, charset:sub(r, r))
+	end
+	return table.concat(ret)
+end
