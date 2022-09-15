@@ -76,11 +76,11 @@ if HEADER["User-Agent"] and HEADER["User-Agent"]:match("Mobi") then
 end
 
 function LOG_INFO(fmt,...)
-    ulib.syslog(5,string.format(fmt or "LOG", table.unpack({...}) or ""))
+    ulib.syslog(5,string.format(fmt or "LOG",...))
 end
 
 function LOG_ERROR(fmt,...)
-    ulib.syslog(3,string.format(fmt or "ERROR", table.unpack({...}) or ""))
+    ulib.syslog(3,string.format(fmt or "ERROR",...))
 end
 
 function has_module(m)
