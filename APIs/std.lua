@@ -4,8 +4,15 @@ array = modules.array()
 modules.sqlite = function()
     if not sqlite then
         sqlite = require("sqlitedb")
-		sqlite.getdb = function(s)
-			return sqlite._getdb(__api__.dbpath.."/"..s..".db")
+		sqlite.getdb = function(name)
+			if name:find("%.db$") then
+				return sqlite._getdb(name)
+			elseif name:find("/") then
+				LOG_ERROR("Invalid database name %s", name)
+				return nil
+			else
+				return sqlite._getdb(__api__.dbpath.."/"..name..".db")
+			end
 		end
 	end
 	return sqlite
