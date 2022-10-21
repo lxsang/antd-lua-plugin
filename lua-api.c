@@ -209,6 +209,10 @@ static void *process(void *data)
     struct pollfd pfds[2];
     pfds[0].fd = rq->client->sock;
     pfds[0].events = POLLIN;
+    if(rq->client->ssl)
+    {
+        pfds[0].events = POLLIN | POLLOUT;
+    }
     pfds[1].fd = cl->sock;
     pfds[1].events = POLLIN;
 
@@ -232,7 +236,7 @@ static void *process(void *data)
         // we have data
         default:
             // If data is on webserver
-            if (pfds[0].revents & POLLIN)
+            if ((pfds[0].revents & POLLIN) || (rq->client->ssl && (pfds[0].revents & POLLOUT)) )
             {
                 while((ret = antd_recv_upto(rq->client,buff, BUFFLEN)) > 0)
                 {
