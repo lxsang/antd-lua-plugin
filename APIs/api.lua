@@ -231,6 +231,8 @@ if code ~= 0 then
     return
 end
 
+-- LOG_INFO(JSON.encode(REQUEST))
+
 -- OOP support
 --require("OOP")
 -- load sqlite helper
@@ -247,6 +249,7 @@ if m then
 		local r,e = loadscript(p)
 		if r then r() else unknow(e) end
     else
+        LOG_INFO("RUNNING MODULE %s", p)
         require(p)
     end
 else
