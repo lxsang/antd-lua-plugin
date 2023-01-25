@@ -242,7 +242,7 @@ end
 -- run the file
 
 
-local m, s, p  = has_module(HTTP_REQUEST.request.RESOURCE_PATH)
+local m, s, p  = has_module(HTTP_REQUEST.request.REQUEST_URI)
 if m then
     -- run the correct module
     if s then
@@ -253,7 +253,7 @@ if m then
         require(p)
     end
 else
-	unknow("Resource not found for request "..HTTP_REQUEST.request.RESOURCE_PATH)
+	unknow("Resource not found for request "..HTTP_REQUEST.request.REQUEST_URI)
 end
 
 
